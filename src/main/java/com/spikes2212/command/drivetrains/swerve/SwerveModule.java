@@ -9,6 +9,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 
+import static java.lang.Math.abs;
+
 /**
  * Represents a single swerve module, serving as the abstraction for one wheel’s steering and driving
  * mechanisms within a swerve drivetrain.
@@ -49,7 +51,7 @@ public abstract class SwerveModule extends DashboardedSubsystem {
      * @param turnMotorPIDSettings          the turn motor pid settings
      * @param driveMotorFeedForwardSettings the drive motor feed forward settings
      * @param turnMotorFeedForwardSettings  the turn motor feed forward settings
-     * @param minSpeedLimit                    a speed limit intended for dealing with stick drift
+     * @param minSpeedLimit                 a speed limit intended for dealing with stick drift
      */
     public SwerveModule(String namespaceName, SmartMotorController driveMotor, SmartMotorController turnMotor,
                         boolean driveMotorInverted, boolean turnMotorInverted, double absoluteEncoderOffset,
@@ -101,8 +103,9 @@ public abstract class SwerveModule extends DashboardedSubsystem {
      * @param useVelocityPID      whether the module will drive with P.I.D for the velocity
      */
     public void setTargetState(SwerveModuleState targetState, double maxPossibleVelocity, boolean useVelocityPID) {
-        if (targetState.speedMetersPerSecond < minSpeedLimit) {
+        if (abs(targetState.speedMetersPerSecond) <= minSpeedLimit) {
             stop();
+            return;
         }
         targetState = optimize(targetState, getRelativeModuleAngle());
         setTargetAngle(targetState.angle);
@@ -132,7 +135,7 @@ public abstract class SwerveModule extends DashboardedSubsystem {
      */
     private SwerveModuleState optimize(SwerveModuleState targetState, double currentAngle) {
         double desiredAngle = normalizeAngleRelativeToRelativeEncoder(currentAngle, targetState.angle.getDegrees());
-        while (Math.abs(desiredAngle - currentAngle) > MAX_DISTANCE_TO_ROTATE) {
+        while (abs(desiredAngle - currentAngle) > MAX_DISTANCE_TO_ROTATE) {
             if (desiredAngle - currentAngle > 0) {
                 desiredAngle -= DEGREES_TO_FLIP;
             } else {
@@ -150,7 +153,7 @@ public abstract class SwerveModule extends DashboardedSubsystem {
      */
     public void setTargetAngle(Rotation2d targetAngle) {
         turnMotor.pidSet(UnifiedControlMode.POSITION, targetAngle.getDegrees(), turnMotorPIDSettings,
-                turnMotorFeedForwardSettings, true);
+                turnMotorFeedForwardSettings, false);
     }
 
     /**
@@ -163,7 +166,7 @@ public abstract class SwerveModule extends DashboardedSubsystem {
     public void setTargetVelocity(double targetVelocity, double maxPossibleVelocity, boolean useVelocityPID) {
         if (useVelocityPID) {
             driveMotor.pidSet(UnifiedControlMode.VELOCITY, targetVelocity, driveMotorPIDSettings,
-                    driveMotorFeedForwardSettings, true);
+                    driveMotorFeedForwardSettings, false);
         } else {
             driveMotor.set(targetVelocity / maxPossibleVelocity);
         }
