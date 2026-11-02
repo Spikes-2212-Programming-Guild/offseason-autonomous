@@ -103,6 +103,7 @@ public abstract class SwerveModule extends DashboardedSubsystem {
      * @param useVelocityPID      whether the module will drive with P.I.D for the velocity
      */
     public void setTargetState(SwerveModuleState targetState, double maxPossibleVelocity, boolean useVelocityPID) {
+        // TODO - check if it should completely stop the motor
         if (abs(targetState.speedMetersPerSecond) <= minSpeedLimit) {
             stop();
             return;
