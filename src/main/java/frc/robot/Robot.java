@@ -61,6 +61,7 @@ public class Robot extends TimedRobot {
     }
 
     private static double squareInputs(double input) {
+        if (Math.abs(input) < 0.08) return 0;
         return Math.signum(input) * (input * input);
     }
 

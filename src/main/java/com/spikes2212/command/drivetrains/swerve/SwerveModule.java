@@ -104,11 +104,11 @@ public abstract class SwerveModule extends DashboardedSubsystem {
      */
     public void setTargetState(SwerveModuleState targetState, double maxPossibleVelocity, boolean useVelocityPID) {
         targetState = optimize(targetState, getRelativeModuleAngle());
-        setTargetAngle(targetState.angle);
         if (Math.abs(targetState.speedMetersPerSecond) <= minSpeedLimit) {
-            driveMotor.set(0);
+            stop();
             return;
         }
+        setTargetAngle(targetState.angle);
         setTargetVelocity(targetState.speedMetersPerSecond, maxPossibleVelocity, useVelocityPID);
     }
 
