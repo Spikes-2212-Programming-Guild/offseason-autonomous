@@ -66,7 +66,7 @@ public class Drivetrain extends SwerveDrivetrain {
 
     @Override
     public void configureDashboard() {
-        namespace.putNumber("gyro", () -> this.getAngle().getDegrees());
+        namespace.putData("swerve", this);
         namespace.putRunnable("reset gyro", () -> gyro.setYaw(0));
     }
 
