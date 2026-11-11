@@ -8,6 +8,7 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
+import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.spikes2212.control.FeedForwardSettings;
 import com.spikes2212.control.PIDSettings;
 import com.spikes2212.control.TrapezoidProfileSettings;
@@ -241,6 +242,10 @@ public class TalonFXWrapper implements SmartMotorController {
 
     public double getVoltage() {
         return talonFX.getMotorVoltage().getValueAsDouble();
+    }
+
+    public TalonFXSimState getSim() {
+        return talonFX.getSimState();
     }
 
     @Override

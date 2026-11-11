@@ -4,15 +4,20 @@ import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
+import com.ctre.phoenix6.sim.CANcoderSimState;
+import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.spikes2212.command.drivetrains.swerve.SwerveModule;
-import com.spikes2212.control.FeedForwardSettings;
-import com.spikes2212.control.PIDSettings;
 import com.spikes2212.control.TrapezoidProfileSettings;
 import com.spikes2212.util.smartmotorcontrollers.SparkWrapper;
 import com.spikes2212.util.smartmotorcontrollers.TalonFXWrapper;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Commands;
 
 import java.util.function.Supplier;
@@ -32,15 +37,16 @@ public class SwerveModuleRebuilt extends SwerveModule {
     private final SparkWrapper turnMotor;
     private final CANcoder cancoder;
 
+    private DCMotorSim driveMotorSim;
+    private TalonFXSimState talonFXSim;
+    private CANcoderSimState cancoderSim;
+
     public SwerveModuleRebuilt(String namespaceName, TalonFXWrapper driveMotor, SparkWrapper turnMotor,
                                boolean driveMotorInverted, boolean turnMotorInverted,
-                               double absoluteEncoderOffset, PIDSettings driveMotorPIDSettings,
-                               PIDSettings turnMotorPIDSettings, FeedForwardSettings driveMotorFeedForwardSettings,
-                               FeedForwardSettings turnMotorFeedForwardSettings, CANcoder cancoder) {
+                               double absoluteEncoderOffset, CANcoder cancoder) {
         super(namespaceName, driveMotor, turnMotor, driveMotorInverted, turnMotorInverted, absoluteEncoderOffset,
-                driveMotorPIDSettings, turnMotorPIDSettings, driveMotorFeedForwardSettings,
-                turnMotorFeedForwardSettings, MIN_SPEED_LIMIT, SwerveConstants.MODULE_HOLDER.UPDATE_DRIVE_PERIODICALLY,
-                SwerveConstants.MODULE_HOLDER.UPDATE_TURN_PERIODICALLY);
+                DRIVE_PID_SETTINGS, TURN_PID_SETTINGS, DRIVE_FF_SETTINGS, TURN_FF_SETTINGS, MIN_SPEED_LIMIT,
+                UPDATE_DRIVE_PERIODICALLY, UPDATE_TURN_PERIODICALLY);
         this.driveMotor = driveMotor;
         this.turnMotor = turnMotor;
         this.cancoder = cancoder;
@@ -49,6 +55,26 @@ public class SwerveModuleRebuilt extends SwerveModule {
 
         driveMotor.setInverted(driveMotorInverted);
         turnMotor.setInverted(!turnMotorInverted);
+
+        if (RobotBase.isSimulation()) {
+            this.absoluteEncoderOffset = 0;
+            driveMotorPIDSettings = SIM_DRIVE_PID_SETTINGS;
+            turnMotorPIDSettings = SIM_TURN_PID_SETTINGS;
+            driveMotorFeedForwardSettings = SIM_DRIVE_FF_SETTINGS;
+            turnMotorFeedForwardSettings = SIM_TURN_FF_SETTINGS;
+
+            turnMotor.configureSimulation(DCMotor.getNEO(1), 1.0, 0.00001873);
+            cancoderSim = cancoder.getSimState();
+            talonFXSim = driveMotor.getSim();
+            driveMotorSim = new DCMotorSim(
+                    LinearSystemId.createDCMotorSystem(
+                            DCMotor.getKrakenX60(1),
+                            0.025,
+                            1 / DRIVE_GEAR_RATIO
+                    ),
+                    DCMotor.getKrakenX60(1)
+            );
+        }
 
         configureTurnController();
         configureDriveController();
@@ -79,13 +105,34 @@ public class SwerveModuleRebuilt extends SwerveModule {
                 withAbsoluteSensorDiscontinuityPoint(ABSOLUTE_POSITION_DISCONTINUITY_POINT).
                 withSensorDirection(turnMotorInverted ? SensorDirectionValue.Clockwise_Positive :
                         SensorDirectionValue.CounterClockwise_Positive)
-                .withMagnetOffset(absoluteEncoderOffset / 360.0);
+                .withMagnetOffset(absoluteEncoderOffset / DEGREES_IN_ROTATION);
         cancoder.getConfigurator().apply(magnetSensorConfigs);
     }
 
     @Override
     protected Rotation2d getAbsoluteModuleAngle() {
         return Rotation2d.fromDegrees(cancoder.getAbsolutePosition().getValue().in(Units.Degree));
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        talonFXSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+        driveMotorSim.setInputVoltage(talonFXSim.getMotorVoltage());
+
+        driveMotorSim.update(SwerveConstants.DRIVETRAIN.DELTA_TIME);
+
+        double rotorPosition = driveMotorSim.getAngularPositionRotations() * 1 / DRIVE_GEAR_RATIO;
+        double rotorVelocity = driveMotorSim.getAngularVelocityRPM() / SECONDS_IN_MINUTE * 1 / DRIVE_GEAR_RATIO;
+
+        talonFXSim.setRawRotorPosition(rotorPosition);
+        talonFXSim.setRotorVelocity(rotorVelocity);
+
+        turnMotor.updateSimulation(SwerveConstants.DRIVETRAIN.DELTA_TIME);
+        double moduleAngleDegrees = turnMotor.getPosition();
+        double moduleRotations = moduleAngleDegrees / DEGREES_IN_ROTATION;
+        double offsetRotations = absoluteEncoderOffset / DEGREES_IN_ROTATION;
+        double rawPosition = moduleRotations - offsetRotations;
+        cancoderSim.setRawPosition(rawPosition);
     }
 
     @Override
@@ -103,7 +150,8 @@ public class SwerveModuleRebuilt extends SwerveModule {
         namespace.putNumber("velocity", this::getDrivingVelocity);
         Supplier<Double> targetVelocity = namespace.addConstantDouble("target velocity", 0);
         namespace.putCommand("set target velocity", Commands.runEnd(
-                () -> setTargetVelocity(targetVelocity.get(), 5.1, true),
+                () -> setTargetVelocity(targetVelocity.get(),
+                        SwerveConstants.DRIVETRAIN.MAX_POSSIBLE_VELOCITY, true),
                 this::stop,
                 this
         ));

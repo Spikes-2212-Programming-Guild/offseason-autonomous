@@ -24,8 +24,7 @@ public class SwerveModuleHolder {
                     new TalonFXWrapper(RobotMap.CAN.SWERVE_FRONT_LEFT_DRIVE_TALON_FX_ID, CAN_BUS),
                     SparkWrapper.createSparkMax(RobotMap.CAN.SWERVE_FRONT_LEFT_TURN_SPARK_MAX_ID,
                             SparkLowLevel.MotorType.kBrushless), FRONT_LEFT_DRIVE_INVERTED,
-                    FRONT_LEFT_CANCODER_INVERTED, FRONT_LEFT_OFFSET, drivePIDSettings, turnPIDSettings,
-                    driveFeedForwardSettings, turnFeedForwardSettings,
+                    FRONT_LEFT_CANCODER_INVERTED, FRONT_LEFT_OFFSET,
                     new CANcoder(RobotMap.CAN.SWERVE_FRONT_LEFT_ABSOLUTE_ENCODER_ID, CAN_BUS));
         }
         return frontLeft;
@@ -37,8 +36,7 @@ public class SwerveModuleHolder {
                     new TalonFXWrapper(RobotMap.CAN.SWERVE_FRONT_RIGHT_DRIVE_TALON_FX_ID, CAN_BUS),
                     SparkWrapper.createSparkMax(RobotMap.CAN.SWERVE_FRONT_RIGHT_TURN_SPARK_MAX_ID,
                             SparkLowLevel.MotorType.kBrushless), FRONT_RIGHT_DRIVE_INVERTED,
-                    FRONT_RIGHT_CANCODER_INVERTED, FRONT_RIGHT_OFFSET, drivePIDSettings, turnPIDSettings,
-                    driveFeedForwardSettings, turnFeedForwardSettings,
+                    FRONT_RIGHT_CANCODER_INVERTED, FRONT_RIGHT_OFFSET,
                     new CANcoder(RobotMap.CAN.SWERVE_FRONT_RIGHT_ABSOLUTE_ENCODER_ID, CAN_BUS));
         }
         return frontRight;
@@ -50,8 +48,7 @@ public class SwerveModuleHolder {
                     new TalonFXWrapper(RobotMap.CAN.SWERVE_BACK_LEFT_DRIVE_TALON_FX_ID, CAN_BUS),
                     SparkWrapper.createSparkMax(RobotMap.CAN.SWERVE_BACK_LEFT_TURN_SPARK_MAX_ID,
                             SparkLowLevel.MotorType.kBrushless), BACK_LEFT_DRIVE_INVERTED,
-                    BACK_LEFT_CANCODER_INVERTED, BACK_LEFT_OFFSET, drivePIDSettings, turnPIDSettings,
-                    driveFeedForwardSettings, turnFeedForwardSettings,
+                    BACK_LEFT_CANCODER_INVERTED, BACK_LEFT_OFFSET,
                     new CANcoder(RobotMap.CAN.SWERVE_BACK_LEFT_ABSOLUTE_ENCODER_ID, CAN_BUS));
         }
         return backLeft;
@@ -63,8 +60,7 @@ public class SwerveModuleHolder {
                     new TalonFXWrapper(RobotMap.CAN.SWERVE_BACK_RIGHT_DRIVE_TALON_FX_ID, CAN_BUS),
                     SparkWrapper.createSparkMax(RobotMap.CAN.SWERVE_BACK_RIGHT_TURN_SPARK_MAX_ID,
                             SparkLowLevel.MotorType.kBrushless), BACK_RIGHT_DRIVE_INVERTED,
-                    BACK_RIGHT_CANCODER_INVERTED, BACK_RIGHT_OFFSET, drivePIDSettings, turnPIDSettings,
-                    driveFeedForwardSettings, turnFeedForwardSettings,
+                    BACK_RIGHT_CANCODER_INVERTED, BACK_RIGHT_OFFSET,
                     new CANcoder(RobotMap.CAN.SWERVE_BACK_RIGHT_ABSOLUTE_ENCODER_ID, CAN_BUS));
         }
         return backRight;

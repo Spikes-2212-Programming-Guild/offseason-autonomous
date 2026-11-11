@@ -29,13 +29,13 @@ public abstract class SwerveModule extends DashboardedSubsystem {
 
     protected final boolean driveMotorInverted;
     protected final boolean turnMotorInverted;
-    protected final double absoluteEncoderOffset;
+    protected double absoluteEncoderOffset;
     protected final double minSpeedLimit;
 
-    protected final PIDSettings driveMotorPIDSettings;
-    protected final PIDSettings turnMotorPIDSettings;
-    protected final FeedForwardSettings driveMotorFeedForwardSettings;
-    protected final FeedForwardSettings turnMotorFeedForwardSettings;
+    protected PIDSettings driveMotorPIDSettings;
+    protected PIDSettings turnMotorPIDSettings;
+    protected FeedForwardSettings driveMotorFeedForwardSettings;
+    protected FeedForwardSettings turnMotorFeedForwardSettings;
 
     protected final boolean updateTurnPeriodically;
     protected final boolean updateDrivePeriodically;
@@ -176,7 +176,7 @@ public abstract class SwerveModule extends DashboardedSubsystem {
      * @return the current state of the module
      */
     public SwerveModuleState getModuleState() {
-        return new SwerveModuleState(driveMotor.getVelocity(), getAbsoluteModuleAngle());
+        return new SwerveModuleState(getDrivingVelocity(), Rotation2d.fromDegrees(getRelativeModuleAngle()));
     }
 
     /**

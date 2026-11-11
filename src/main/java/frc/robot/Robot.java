@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.swerve.commands.Drive;
@@ -51,18 +52,18 @@ public class Robot extends TimedRobot {
         swerve.resetRelativeEncoders();
 
         OI oi = new OI();
-        double ySpeed = 3;
-        double xSpeed = 3;
-        double rotationSpeed = 3;
-        swerve.setDefaultCommand(new Drive(() ->
-                squareInputs(oi.getLeftY()) * xSpeed,
-                () -> squareInputs(oi.getLeftX()) * ySpeed,
-                () -> squareInputs(oi.getRightX()) * rotationSpeed, true, true));
+        double ySpeed = 5;
+        double xSpeed = 5;
+        double rotationSpeed = 5;
+        swerve.setDefaultCommand(new Drive(
+                () -> deadband(oi.getLeftX()) * xSpeed,
+                () -> deadband(oi.getLeftY()) * ySpeed,
+                () -> deadband(oi.getRightX()) * rotationSpeed, true, true));
     }
 
-    private static double squareInputs(double input) {
+    private static double deadband(double input) {
         if (Math.abs(input) < 0.08) return 0;
-        return Math.signum(input) * (input * input);
+        return MathUtil.copyDirectionPow(input, 2);
     }
 
     @Override

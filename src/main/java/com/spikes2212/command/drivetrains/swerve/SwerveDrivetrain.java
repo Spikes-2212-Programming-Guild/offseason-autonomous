@@ -274,30 +274,18 @@ public abstract class SwerveDrivetrain extends DashboardedSubsystem implements S
      */
     @Override
     public void initSendable(SendableBuilder builder) {
-        super.initSendable(builder);
         builder.setSmartDashboardType("SwerveDrive");
+        addModuleSendable(builder, getBackLeftModule(), "Back Left");
+        addModuleSendable(builder, getBackRightModule(), "Back Right");
+        addModuleSendable(builder, getFrontLeftModule(), "Front Left");
+        addModuleSendable(builder, getFrontRightModule(), "Front Right");
+        builder.addDoubleProperty("Robot Angle", () -> getAngle().getDegrees(), null);
+    }
 
-        builder.addDoubleProperty("Front Left Angle",
-                () -> frontLeftModule.getAbsoluteModuleAngle().getRadians(), null);
-        builder.addDoubleProperty("Front Left Velocity",
-                frontLeftModule::getDrivingVelocity, null);
-
-        builder.addDoubleProperty("Front Right Angle",
-                () -> frontRightModule.getAbsoluteModuleAngle().getRadians(), null);
-        builder.addDoubleProperty("Front Right Velocity",
-                frontRightModule::getDrivingVelocity, null);
-
-        builder.addDoubleProperty("Back Left Angle",
-                () -> backLeftModule.getAbsoluteModuleAngle().getRadians(), null);
-        builder.addDoubleProperty("Back Left Velocity",
-                backLeftModule::getDrivingVelocity, null);
-
-        builder.addDoubleProperty("Back Right Angle",
-                () -> backRightModule.getAbsoluteModuleAngle().getRadians(), null);
-        builder.addDoubleProperty("Back Right Velocity",
-                backRightModule::getDrivingVelocity, null);
-
-        builder.addDoubleProperty("Robot Angle",
-                () -> getAngle().getRadians(), null);
+    private void addModuleSendable(SendableBuilder builder, SwerveModule module, String name) {
+        builder.addDoubleProperty(name + " Angle",
+                () -> module.getModuleState().angle.getDegrees(), null);
+        builder.addDoubleProperty(name + " Velocity",
+                () -> module.getModuleState().speedMetersPerSecond, null);
     }
 }

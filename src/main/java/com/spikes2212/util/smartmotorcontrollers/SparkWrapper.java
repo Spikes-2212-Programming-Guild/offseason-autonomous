@@ -9,6 +9,11 @@ import com.spikes2212.control.FeedForwardSettings;
 import com.spikes2212.control.PIDSettings;
 import com.spikes2212.control.TrapezoidProfileSettings;
 import com.spikes2212.util.UnifiedControlMode;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
 /**
  * A {@link SmartMotorController} representation of a {@link SparkBase} motor controller.
@@ -47,6 +52,10 @@ public class SparkWrapper implements SmartMotorController {
      * The encoder configuration for the spark.
      */
     private EncoderConfig encoderConfig;
+
+    private SparkSim sparkSim;
+    private DCMotorSim motorSim;
+    private double velocityConversionFactor;
 
     /**
      * Constructs a new instance of {@link SparkWrapper} with a {@link SparkMax} as the motor controller.
@@ -135,6 +144,25 @@ public class SparkWrapper implements SmartMotorController {
         encoderConfig = new EncoderConfig();
         sparkBase.configure(sparkConfig, ResetMode.kResetSafeParameters,
                 PersistMode.kPersistParameters);
+    }
+
+    public void configureSimulation(DCMotor motorModel, double gearing, double moi) {
+        sparkSim = new SparkSim(sparkBase, motorModel);
+        motorSim = new DCMotorSim(
+                LinearSystemId.createDCMotorSystem(motorModel, moi, gearing),
+                motorModel
+        );
+    }
+
+    public void updateSimulation(double dt) {
+        if (sparkSim == null || motorSim == null) {
+            return;
+        }
+        double batteryVoltage = RobotController.getBatteryVoltage();
+        motorSim.setInputVoltage(sparkSim.getAppliedOutput() * batteryVoltage);
+        motorSim.update(dt);
+        double motorRpm = Units.radiansPerSecondToRotationsPerMinute(motorSim.getAngularVelocityRadPerSec());
+        sparkSim.iterate(motorRpm * velocityConversionFactor, batteryVoltage, dt);
     }
 
     @Override
@@ -281,6 +309,7 @@ public class SparkWrapper implements SmartMotorController {
     }
 
     public void setVelocityConversionFactor(double factor) {
+        velocityConversionFactor = factor;
         encoderConfig.velocityConversionFactor(factor);
         sparkBase.configure(sparkConfig.apply(encoderConfig), ResetMode.kNoResetSafeParameters,
                 PersistMode.kNoPersistParameters);

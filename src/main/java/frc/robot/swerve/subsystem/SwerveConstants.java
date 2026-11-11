@@ -15,6 +15,27 @@ public class SwerveConstants {
         int DEGREES_IN_ROTATION = 360;
         int SECONDS_IN_MINUTE = 60;
         int ABSOLUTE_POSITION_DISCONTINUITY_POINT = 1;
+
+        PIDSettings DRIVE_PID_SETTINGS = new PIDSettings(
+                0.015, 0, 0, 0, 0, 0);
+        FeedForwardSettings DRIVE_FF_SETTINGS = new FeedForwardSettings(
+                0.014, 0.175, 0, FeedForwardController.ControlMode.LINEAR_VELOCITY);
+        PIDSettings TURN_PID_SETTINGS = new PIDSettings(
+                0.02, 0, 0.0001, 0, 0, 0);
+        FeedForwardSettings TURN_FF_SETTINGS =
+                new FeedForwardSettings(FeedForwardController.ControlMode.LINEAR_POSITION);
+
+        PIDSettings SIM_DRIVE_PID_SETTINGS = new PIDSettings(
+                0, 0, 0);
+        FeedForwardSettings SIM_DRIVE_FF_SETTINGS = new FeedForwardSettings(
+                0.191, 0, FeedForwardController.ControlMode.LINEAR_VELOCITY);
+        PIDSettings SIM_TURN_PID_SETTINGS = new PIDSettings(
+                0.02, 0, 0.0001, 0, 0, 0);
+        FeedForwardSettings SIM_TURN_FF_SETTINGS =
+                new FeedForwardSettings(FeedForwardController.ControlMode.LINEAR_POSITION);
+
+        boolean UPDATE_TURN_PERIODICALLY = false;
+        boolean UPDATE_DRIVE_PERIODICALLY = false;
     }
 
     interface DRIVETRAIN {
@@ -24,6 +45,7 @@ public class SwerveConstants {
         double TRACK_WIDTH = 0.55;
         double TRACK_LENGTH = 0.55;
         int GYRO_OFFSET = 180;
+        double DELTA_TIME = 0.02;
     }
 
     interface MODULE_HOLDER {
@@ -49,20 +71,5 @@ public class SwerveConstants {
         double FRONT_RIGHT_OFFSET = 27.50976562;
         double BACK_LEFT_OFFSET = -18.10546875;
         double BACK_RIGHT_OFFSET = -12.04101563;
-
-        PIDSettings drivePIDSettings =
-                new PIDSettings(0.015, 0, 0, 0, 0, 0);
-
-        PIDSettings turnPIDSettings =
-                new PIDSettings(0.02, 0, 0.001, 0, 0, 0);
-
-        FeedForwardSettings driveFeedForwardSettings = new FeedForwardSettings(
-                0.014, 0.175, 0, FeedForwardController.ControlMode.LINEAR_VELOCITY);
-
-        FeedForwardSettings turnFeedForwardSettings = new FeedForwardSettings(0, 0, 0,
-                FeedForwardController.ControlMode.LINEAR_POSITION);
-
-        boolean UPDATE_TURN_PERIODICALLY = false;
-        boolean UPDATE_DRIVE_PERIODICALLY = false;
     }
 }
