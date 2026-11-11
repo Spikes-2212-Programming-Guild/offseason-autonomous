@@ -40,7 +40,7 @@ public class RootNamespace implements Namespace {
         NetworkTableEntry entry = table.getEntry(name);
         if (!table.containsKey(name)) {
             entry.setDouble(value);
-            entry.setPersistent();
+            
         }
         return () -> entry.getDouble(value);
     }
@@ -50,7 +50,7 @@ public class RootNamespace implements Namespace {
         NetworkTableEntry entry = table.getEntry(name);
         if (!table.containsKey(name)) {
             entry.setNumber(value);
-            entry.setPersistent();
+            
         }
         return () -> entry.getNumber(value).intValue();
     }
@@ -60,7 +60,7 @@ public class RootNamespace implements Namespace {
         NetworkTableEntry entry = table.getEntry(name);
         if (!table.containsKey(name)) {
             entry.setString(value);
-            entry.setPersistent();
+            
         }
         return () -> entry.getString(value);
     }
