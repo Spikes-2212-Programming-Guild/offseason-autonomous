@@ -7,17 +7,17 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.swerve.commands.Drive;
-import frc.robot.swerve.subsystem.Drivetrain;
+import frc.robot.swerve.subsystem.Swerve;
 import frc.robot.swerve.subsystem.SwerveModuleHolder;
 
 public class Robot extends TimedRobot {
 
-    private Drivetrain drivetrain;
+    private Swerve swerve;
 
     @Override
     public void robotInit() {
         CommandScheduler.getInstance().cancelAll();
-        drivetrain = Drivetrain.getInstance();
+        swerve = Swerve.getInstance();
     }
 
     @Override
@@ -47,14 +47,14 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopInit() {
-        drivetrain.resetFieldRelativity();
-        drivetrain.resetRelativeEncoders();
+        swerve.resetFieldRelativity();
+        swerve.resetRelativeEncoders();
 
         OI oi = new OI();
         double ySpeed = 3;
         double xSpeed = 3;
         double rotationSpeed = 3;
-        drivetrain.setDefaultCommand(new Drive(() ->
+        swerve.setDefaultCommand(new Drive(() ->
                 squareInputs(oi.getLeftY()) * xSpeed,
                 () -> squareInputs(oi.getLeftX()) * ySpeed,
                 () -> squareInputs(oi.getRightX()) * rotationSpeed, true, true));

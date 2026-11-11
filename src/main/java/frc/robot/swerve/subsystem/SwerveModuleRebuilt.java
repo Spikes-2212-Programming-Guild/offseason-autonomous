@@ -13,16 +13,13 @@ import com.spikes2212.util.smartmotorcontrollers.SparkWrapper;
 import com.spikes2212.util.smartmotorcontrollers.TalonFXWrapper;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.wpilibj2.command.Commands;
+
+import java.util.function.Supplier;
+
+import static frc.robot.swerve.subsystem.SwerveConstants.MODULE.*;
 
 public class SwerveModuleRebuilt extends SwerveModule {
-
-    private static final double MIN_SPEED_LIMIT = 0.1;
-    private static final double DRIVE_GEAR_RATIO = 1 / 6.12;
-    private static final double TURN_GEAR_RATIO = (double) 7 / 150;
-    private static final double WHEEL_DIAMETER_METERS = 0.1016;
-    private static final int DEGREES_IN_ROTATION = 360;
-    private static final int SECONDS_IN_MINUTE = 60;
-    private static final int ABSOLUTE_POSITION_DISCONTINUITY_POINT = 1;
 
     private static final double DRIVE_MOTOR_ROTATION_TO_WHEEL_ROTATIONS =
             DRIVE_GEAR_RATIO * WHEEL_DIAMETER_METERS * Math.PI;
@@ -42,8 +39,8 @@ public class SwerveModuleRebuilt extends SwerveModule {
                                FeedForwardSettings turnMotorFeedForwardSettings, CANcoder cancoder) {
         super(namespaceName, driveMotor, turnMotor, driveMotorInverted, turnMotorInverted, absoluteEncoderOffset,
                 driveMotorPIDSettings, turnMotorPIDSettings, driveMotorFeedForwardSettings,
-                turnMotorFeedForwardSettings, MIN_SPEED_LIMIT, SwerveModuleHolder.UPDATE_DRIVE_PERIODICALLY,
-                SwerveModuleHolder.UPDATE_TURN_PERIODICALLY);
+                turnMotorFeedForwardSettings, MIN_SPEED_LIMIT, SwerveConstants.MODULE_HOLDER.UPDATE_DRIVE_PERIODICALLY,
+                SwerveConstants.MODULE_HOLDER.UPDATE_TURN_PERIODICALLY);
         this.driveMotor = driveMotor;
         this.turnMotor = turnMotor;
         this.cancoder = cancoder;
@@ -81,7 +78,8 @@ public class SwerveModuleRebuilt extends SwerveModule {
         MagnetSensorConfigs magnetSensorConfigs = new MagnetSensorConfigs().
                 withAbsoluteSensorDiscontinuityPoint(ABSOLUTE_POSITION_DISCONTINUITY_POINT).
                 withSensorDirection(turnMotorInverted ? SensorDirectionValue.Clockwise_Positive :
-                        SensorDirectionValue.CounterClockwise_Positive).withMagnetOffset(absoluteEncoderOffset / 360.0);
+                        SensorDirectionValue.CounterClockwise_Positive)
+                .withMagnetOffset(absoluteEncoderOffset / 360.0);
         cancoder.getConfigurator().apply(magnetSensorConfigs);
     }
 
@@ -94,20 +92,20 @@ public class SwerveModuleRebuilt extends SwerveModule {
     public void configureDashboard() {
         namespace.putNumber("absolute encoder", () -> this.getAbsoluteModuleAngle().getDegrees());
         namespace.putNumber("relative angle", this::getRelativeModuleAngle);
-//
-//        Supplier<Double> targetAngle = namespace.addConstantDouble("target angle", 0);
-//        namespace.putCommand("set target angle", Commands.runEnd(
-//                () -> setTargetAngle(Rotation2d.fromDegrees(targetAngle.get())),
-//                this::stop,
-//                this
-//        ));
 
-//        namespace.putNumber("velocity", this::getDrivingVelocity);
-//        Supplier<Double> targetVelocity = namespace.addConstantDouble("target velocity", 0);
-//        namespace.putCommand("set target velocity", Commands.runEnd(
-//                () -> setTargetVelocity(targetVelocity.get(), 5.1, true),
-//                this::stop,
-//                this
-//        ));
+        Supplier<Double> targetAngle = namespace.addConstantDouble("target angle", 0);
+        namespace.putCommand("set target angle", Commands.runEnd(
+                () -> setTargetAngle(Rotation2d.fromDegrees(targetAngle.get())),
+                this::stop,
+                this
+        ));
+
+        namespace.putNumber("velocity", this::getDrivingVelocity);
+        Supplier<Double> targetVelocity = namespace.addConstantDouble("target velocity", 0);
+        namespace.putCommand("set target velocity", Commands.runEnd(
+                () -> setTargetVelocity(targetVelocity.get(), 5.1, true),
+                this::stop,
+                this
+        ));
     }
 }
