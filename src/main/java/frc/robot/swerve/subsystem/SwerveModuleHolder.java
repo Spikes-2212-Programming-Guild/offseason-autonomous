@@ -49,6 +49,9 @@ public class SwerveModuleHolder {
     private static final FeedForwardSettings turnFeedForwardSettings =
             new FeedForwardSettings(0, 0, 0, FeedForwardController.ControlMode.LINEAR_POSITION);
 
+    public static final boolean UPDATE_TURN_PERIODICALLY = false;
+    public static final boolean UPDATE_DRIVE_PERIODICALLY = false;
+
     private static SwerveModuleRebuilt frontLeft;
     private static SwerveModuleRebuilt frontRight;
     private static SwerveModuleRebuilt backLeft;

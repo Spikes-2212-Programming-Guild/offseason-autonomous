@@ -42,7 +42,8 @@ public class SwerveModuleRebuilt extends SwerveModule {
                                FeedForwardSettings turnMotorFeedForwardSettings, CANcoder cancoder) {
         super(namespaceName, driveMotor, turnMotor, driveMotorInverted, turnMotorInverted, absoluteEncoderOffset,
                 driveMotorPIDSettings, turnMotorPIDSettings, driveMotorFeedForwardSettings,
-                turnMotorFeedForwardSettings, MIN_SPEED_LIMIT);
+                turnMotorFeedForwardSettings, MIN_SPEED_LIMIT, SwerveModuleHolder.UPDATE_DRIVE_PERIODICALLY,
+                SwerveModuleHolder.UPDATE_TURN_PERIODICALLY);
         this.driveMotor = driveMotor;
         this.turnMotor = turnMotor;
         this.cancoder = cancoder;
