@@ -4,8 +4,12 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.spikes2212.dashboard.RootNamespace;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.swerve.commands.Drive;
 import frc.robot.swerve.subsystem.Swerve;
@@ -13,18 +17,25 @@ import frc.robot.swerve.subsystem.SwerveModuleHolder;
 
 public class Robot extends TimedRobot {
 
-    private Swerve swerve;
+    private Swerve swerve = Swerve.getInstance();
+
+    RootNamespace namespace = new RootNamespace("robot");
+    AutonomousContainer container = new AutonomousContainer(swerve);
+
 
     @Override
     public void robotInit() {
         CommandScheduler.getInstance().cancelAll();
-        swerve = Swerve.getInstance();
+//        swerve = Swerve.getInstance();
     }
 
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
         SwerveModuleHolder.updateNamespace();
+        swerve.updateOdometry();
+        container.updateNamespace();
+        namespace.update();
     }
 
     @Override
@@ -39,6 +50,8 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
+        Command auto = new PathPlannerAuto("New Auto");
+        namespace.putCommand("auto", auto);
     }
 
     @Override
