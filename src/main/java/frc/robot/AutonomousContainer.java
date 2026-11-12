@@ -58,7 +58,7 @@ public class AutonomousContainer {
 
         configureAutoBuilder();
         setupTargetPoseUpdateLoop();
-
+        configureDashboard();
     }
 
     private void configureAutoBuilder() {

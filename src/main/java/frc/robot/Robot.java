@@ -26,6 +26,8 @@ public class Robot extends TimedRobot {
     @Override
     public void robotInit() {
         CommandScheduler.getInstance().cancelAll();
+        Command auto = new PathPlannerAuto("New Auto");
+        namespace.putCommand("auto", auto);
 //        swerve = Swerve.getInstance();
     }
 
@@ -50,8 +52,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
-        Command auto = new PathPlannerAuto("New Auto");
-        namespace.putCommand("auto", auto);
+
     }
 
     @Override
@@ -65,17 +66,17 @@ public class Robot extends TimedRobot {
         swerve.resetRelativeEncoders();
 
         OI oi = new OI();
-        double ySpeed = 5;
-        double xSpeed = 5;
-        double rotationSpeed = 5;
+        double ySpeed = 2;
+        double xSpeed = 2;
+        double rotationSpeed = 2;
         swerve.setDefaultCommand(new Drive(
-                () -> deadband(oi.getLeftX()) * xSpeed,
-                () -> deadband(oi.getLeftY()) * ySpeed,
+                () -> deadband(oi.getLeftY()) * xSpeed,
+                () -> deadband(oi.getLeftX()) * ySpeed,
                 () -> deadband(oi.getRightX()) * rotationSpeed, true, true));
     }
 
     private static double deadband(double input) {
-        if (Math.abs(input) < 0.08) return 0;
+        if (Math.abs(input) < 0.05) return 0;
         return MathUtil.copyDirectionPow(input, 2);
     }
 
