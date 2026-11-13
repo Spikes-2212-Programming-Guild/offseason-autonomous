@@ -1,7 +1,7 @@
 package com.spikes2212.command.drivetrains.tankdrivetrains.commands.smartmotorcontrollerdrivetrain;
 
 import com.spikes2212.command.drivetrains.tankdrivetrains.smartmotorcontrollerdrivetrain.SmartMotorControllerTankDrivetrain;
-import com.spikes2212.control.FeedForwardSettings;
+import com.spikes2212.control.FFSettings;
 import com.spikes2212.control.PIDSettings;
 import com.spikes2212.control.TrapezoidProfileSettings;
 import com.spikes2212.util.UnifiedControlMode;
@@ -29,7 +29,7 @@ public class MoveSmartMotorControllerTankDrivetrainTrapezically extends MoveSmar
      * @param drivetrain               the {@link SmartMotorControllerTankDrivetrain} this command will run on
      * @param leftPIDSettings          the left side's loop's PID constants
      * @param rightPIDSettings         the right side's loop's PID constants
-     * @param feedForwardSettings      the loop's feed forward gains
+     * @param ffSettings      the loop's feed forward gains
      * @param leftSetpoint             the setpoint this command should bring the
      *                                 {@link SmartMotorControllerTankDrivetrain}'s left side to
      * @param rightSetpoint            the setpoint this command should bring the
@@ -38,23 +38,23 @@ public class MoveSmartMotorControllerTankDrivetrainTrapezically extends MoveSmar
      */
     public MoveSmartMotorControllerTankDrivetrainTrapezically(SmartMotorControllerTankDrivetrain drivetrain,
                                                               PIDSettings leftPIDSettings, PIDSettings rightPIDSettings,
-                                                              FeedForwardSettings feedForwardSettings,
+                                                              FFSettings ffSettings,
                                                               Supplier<Double> leftSetpoint,
                                                               Supplier<Double> rightSetpoint,
                                                               TrapezoidProfileSettings trapezoidProfileSettings) {
-        super(drivetrain, leftPIDSettings, rightPIDSettings, feedForwardSettings, UnifiedControlMode.TRAPEZOID_PROFILE,
+        super(drivetrain, leftPIDSettings, rightPIDSettings, ffSettings, UnifiedControlMode.TRAPEZOID_PROFILE,
                 leftSetpoint, rightSetpoint);
         this.trapezoidProfileSettings = trapezoidProfileSettings;
     }
 
     @Override
     public void initialize() {
-        drivetrain.configureLoop(leftPIDSettings, rightPIDSettings, feedForwardSettings, trapezoidProfileSettings);
+        drivetrain.configureLoop(leftPIDSettings, rightPIDSettings, ffSettings, trapezoidProfileSettings);
     }
 
     @Override
     public void execute() {
         drivetrain.pidSet(controlMode, leftSetpoint.get(), rightSetpoint.get(), leftPIDSettings, rightPIDSettings,
-                feedForwardSettings, trapezoidProfileSettings);
+                ffSettings, trapezoidProfileSettings);
     }
 }

@@ -15,10 +15,12 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 
 import java.util.function.Supplier;
 
@@ -60,8 +62,8 @@ public class SwerveModuleRebuilt extends SwerveModule {
             this.absoluteEncoderOffset = 0;
             driveMotorPIDSettings = SIM_DRIVE_PID_SETTINGS;
             turnMotorPIDSettings = SIM_TURN_PID_SETTINGS;
-            driveMotorFeedForwardSettings = SIM_DRIVE_FF_SETTINGS;
-            turnMotorFeedForwardSettings = SIM_TURN_FF_SETTINGS;
+            driveMotorFFSettings = SIM_DRIVE_FF_SETTINGS;
+            turnMotorFFSettings = SIM_TURN_FF_SETTINGS;
 
             turnMotor.configureSimulation(DCMotor.getNEO(1), 1.0, 0.00001873);
             cancoderSim = cancoder.getSimState();
@@ -86,7 +88,7 @@ public class SwerveModuleRebuilt extends SwerveModule {
     protected void configureDriveController() {
         driveMotor.setIdleMode(NeutralModeValue.Brake);
         driveMotor.setEncoderConversionFactor(DRIVE_MOTOR_ROTATION_TO_WHEEL_ROTATIONS);
-        driveMotor.configureLoop(driveMotorPIDSettings, driveMotorFeedForwardSettings,
+        driveMotor.configureLoop(driveMotorPIDSettings, driveMotorFFSettings,
                 TrapezoidProfileSettings.EMPTY_TRAPEZOID_PROFILE_SETTINGS);
     }
 
@@ -95,7 +97,7 @@ public class SwerveModuleRebuilt extends SwerveModule {
         turnMotor.setIdleMode(SparkBaseConfig.IdleMode.kBrake);
         turnMotor.setPositionConversionFactor(TURN_POSITION_IN_ROTATION);
         turnMotor.setVelocityConversionFactor(TURN_VELOCITY_IN_ROTATION);
-        turnMotor.configureLoop(turnMotorPIDSettings, turnMotorFeedForwardSettings,
+        turnMotor.configureLoop(turnMotorPIDSettings, turnMotorFFSettings,
                 TrapezoidProfileSettings.EMPTY_TRAPEZOID_PROFILE_SETTINGS);
     }
 
@@ -150,8 +152,7 @@ public class SwerveModuleRebuilt extends SwerveModule {
         namespace.putNumber("velocity", this::getDrivingVelocity);
         Supplier<Double> targetVelocity = namespace.addConstantDouble("target velocity", 0);
         namespace.putCommand("set target velocity", Commands.runEnd(
-                () -> setTargetVelocity(targetVelocity.get(),
-                        SwerveConstants.DRIVETRAIN.MAX_POSSIBLE_VELOCITY, true),
+                () -> setTargetVelocity(targetVelocity.get()),
                 this::stop,
                 this
         ));

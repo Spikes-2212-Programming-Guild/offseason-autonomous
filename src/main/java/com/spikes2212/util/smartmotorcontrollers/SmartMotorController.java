@@ -1,6 +1,6 @@
 package com.spikes2212.util.smartmotorcontrollers;
 
-import com.spikes2212.control.FeedForwardSettings;
+import com.spikes2212.control.FFSettings;
 import com.spikes2212.control.PIDSettings;
 import com.spikes2212.control.TrapezoidProfileSettings;
 import com.spikes2212.util.UnifiedControlMode;
@@ -21,7 +21,7 @@ public interface SmartMotorController extends MotorController {
     /**
      * Configures the loop's feed forward gains.
      */
-    void configureFF(FeedForwardSettings feedForwardSettings);
+    void configureFF(FFSettings ffSettings);
 
 
     /**
@@ -33,10 +33,10 @@ public interface SmartMotorController extends MotorController {
     /**
      * Configures the loop's settings.
      */
-    default void configureLoop(PIDSettings pidSettings, FeedForwardSettings feedForwardSettings,
+    default void configureLoop(PIDSettings pidSettings, FFSettings ffSettings,
                                TrapezoidProfileSettings trapezoidProfileSettings) {
         configurePID(pidSettings);
-        configureFF(feedForwardSettings);
+        configureFF(ffSettings);
         configureTrapezoid(trapezoidProfileSettings);
     }
 
@@ -58,12 +58,12 @@ public interface SmartMotorController extends MotorController {
      * @param controlMode              the loop's control mode
      * @param setpoint                 the loop's target
      * @param pidSettings              the PID constants
-     * @param feedForwardSettings      the feed forward gains
+     * @param ffSettings      the feed forward gains
      * @param trapezoidProfileSettings the trapezoid profile settings
      * @param updatePeriodically       whether to update the loop's constants periodically
      */
     void pidSet(UnifiedControlMode controlMode, double setpoint, PIDSettings pidSettings,
-                FeedForwardSettings feedForwardSettings, TrapezoidProfileSettings trapezoidProfileSettings,
+                FFSettings ffSettings, TrapezoidProfileSettings trapezoidProfileSettings,
                 boolean updatePeriodically);
 
     /**
@@ -73,11 +73,11 @@ public interface SmartMotorController extends MotorController {
      * @param setpoint            the loop's target
      * @param acceleration        the desired acceleration
      * @param pidSettings         the PID constants
-     * @param feedForwardSettings the feed forward gains
+     * @param ffSettings the feed forward gains
      * @param updatePeriodically  whether to update the loop's constants periodically
      */
     void pidSet(UnifiedControlMode controlMode, double setpoint, double acceleration, PIDSettings pidSettings,
-                FeedForwardSettings feedForwardSettings, boolean updatePeriodically);
+                FFSettings ffSettings, boolean updatePeriodically);
 
     /**
      * Updates any control loops running on the drivetrain's motor controllers.
@@ -85,11 +85,11 @@ public interface SmartMotorController extends MotorController {
      * @param controlMode         the loop's control mode
      * @param setpoint            the loop's target
      * @param pidSettings         the PID constants
-     * @param feedForwardSettings the feed forward gains
+     * @param ffSettings the feed forward gains
      * @param updatePeriodically  whether to update the loop's constants periodically
      */
     void pidSet(UnifiedControlMode controlMode, double setpoint, PIDSettings pidSettings,
-                FeedForwardSettings feedForwardSettings, boolean updatePeriodically);
+                FFSettings ffSettings, boolean updatePeriodically);
 
     /**
      * Checks whether the loops are currently on the target setpoints.

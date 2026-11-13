@@ -1,7 +1,7 @@
 package com.spikes2212.command.drivetrains.tankdrivetrains.commands.smartmotorcontrollerdrivetrain;
 
 import com.spikes2212.command.drivetrains.tankdrivetrains.smartmotorcontrollerdrivetrain.SmartMotorControllerTankDrivetrain;
-import com.spikes2212.control.FeedForwardSettings;
+import com.spikes2212.control.FFSettings;
 import com.spikes2212.control.PIDSettings;
 import com.spikes2212.util.UnifiedControlMode;
 import edu.wpi.first.wpilibj.Timer;
@@ -35,7 +35,7 @@ public class MoveSmartMotorControllerTankDrivetrain extends Command {
     /**
      * The loop's feed forward gains.
      */
-    protected final FeedForwardSettings feedForwardSettings;
+    protected final FFSettings ffSettings;
 
     /**
      * The loop's control mode (e.g. voltage, velocity, position...).
@@ -68,7 +68,7 @@ public class MoveSmartMotorControllerTankDrivetrain extends Command {
      * @param drivetrain          the {@link SmartMotorControllerTankDrivetrain} this command will run on
      * @param leftPIDSettings     the left side's loop's PID constants
      * @param rightPIDSettings    the right side's loop's PID constants
-     * @param feedForwardSettings the loops' feed forward gains
+     * @param ffSettings the loops' feed forward gains
      * @param controlMode         the loops' control mode (e.g. voltage, velocity, position...)
      * @param leftSetpoint        the setpoint this command should bring the
      *                            {@link SmartMotorControllerTankDrivetrain}'s left side to
@@ -77,7 +77,7 @@ public class MoveSmartMotorControllerTankDrivetrain extends Command {
      */
     public MoveSmartMotorControllerTankDrivetrain(SmartMotorControllerTankDrivetrain drivetrain,
                                                   PIDSettings leftPIDSettings, PIDSettings rightPIDSettings,
-                                                  FeedForwardSettings feedForwardSettings,
+                                                  FFSettings ffSettings,
                                                   UnifiedControlMode controlMode, Supplier<Double> leftSetpoint,
                                                   Supplier<Double> rightSetpoint) {
         addRequirements(drivetrain);
@@ -85,7 +85,7 @@ public class MoveSmartMotorControllerTankDrivetrain extends Command {
         this.controlMode = controlMode;
         this.leftPIDSettings = leftPIDSettings;
         this.rightPIDSettings = rightPIDSettings;
-        this.feedForwardSettings = feedForwardSettings;
+        this.ffSettings = ffSettings;
         this.leftSetpoint = leftSetpoint;
         this.rightSetpoint = rightSetpoint;
         this.lastTimeLeftNotOnTarget = 0;
@@ -97,7 +97,7 @@ public class MoveSmartMotorControllerTankDrivetrain extends Command {
      */
     @Override
     public void initialize() {
-        drivetrain.configureLoop(leftPIDSettings, rightPIDSettings, feedForwardSettings);
+        drivetrain.configureLoop(leftPIDSettings, rightPIDSettings, ffSettings);
     }
 
     /**
@@ -106,7 +106,7 @@ public class MoveSmartMotorControllerTankDrivetrain extends Command {
     @Override
     public void execute() {
         drivetrain.pidSet(controlMode, leftSetpoint.get(), rightSetpoint.get(), leftPIDSettings,
-                rightPIDSettings, feedForwardSettings);
+                rightPIDSettings, ffSettings);
     }
 
     @Override

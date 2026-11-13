@@ -85,13 +85,12 @@ public abstract class SwerveDrivetrain extends DashboardedSubsystem implements S
      * @param rotationSpeed   the desired speed for the drivetrain rotation
      * @param isFieldRelative whether the drive should be relative to the field or to the robot
      * @param timeStep        the delta time in which the speeds are updated
-     * @param useVelocityPID  whether the robot velocity will be applied using P.I.D or not
      */
     public void drive(double xSpeed, double ySpeed, double rotationSpeed, boolean isFieldRelative,
-                      double timeStep, boolean useVelocityPID) {
+                      double timeStep) {
         SwerveModuleState[] states = getDesiredStates(xSpeed, ySpeed, rotationSpeed, isFieldRelative, timeStep);
         SwerveDriveKinematics.desaturateWheelSpeeds(states, maxPossibleVelocity);
-        setTargetModuleStates(states, useVelocityPID);
+        setTargetModuleStates(states);
     }
 
     /**
@@ -119,13 +118,12 @@ public abstract class SwerveDrivetrain extends DashboardedSubsystem implements S
      * Sets the desired module states.
      *
      * @param targetModuleStates an array containing the desired speed and angle for each swerve module
-     * @param useVelocityPID     whether the modules will drive with P.I.D for the velocity
      */
-    protected void setTargetModuleStates(SwerveModuleState[] targetModuleStates, boolean useVelocityPID) {
-        frontLeftModule.setTargetState(targetModuleStates[0], maxPossibleVelocity, useVelocityPID);
-        frontRightModule.setTargetState(targetModuleStates[1], maxPossibleVelocity, useVelocityPID);
-        backLeftModule.setTargetState(targetModuleStates[2], maxPossibleVelocity, useVelocityPID);
-        backRightModule.setTargetState(targetModuleStates[3], maxPossibleVelocity, useVelocityPID);
+    protected void setTargetModuleStates(SwerveModuleState[] targetModuleStates) {
+        frontLeftModule.setTargetState(targetModuleStates[0]);
+        frontRightModule.setTargetState(targetModuleStates[1]);
+        backLeftModule.setTargetState(targetModuleStates[2]);
+        backRightModule.setTargetState(targetModuleStates[3]);
     }
 
     /**
@@ -201,8 +199,8 @@ public abstract class SwerveDrivetrain extends DashboardedSubsystem implements S
      * @return the robots current {@link ChassisSpeeds}
      */
     public ChassisSpeeds getSpeeds() {
-        return kinematics.toChassisSpeeds(frontLeftModule.getModuleState(), frontRightModule.getModuleState(),
-                backLeftModule.getModuleState(), backRightModule.getModuleState());
+        return kinematics.toChassisSpeeds(frontLeftModule.getMeasuredState(), frontRightModule.getMeasuredState(),
+                backLeftModule.getMeasuredState(), backRightModule.getMeasuredState());
     }
 
     /**
@@ -269,23 +267,34 @@ public abstract class SwerveDrivetrain extends DashboardedSubsystem implements S
         backRightModule.stop();
     }
 
-    /**
-     * Initializes a Sendable representation of the swerve drivetrain for SmartDashboard.
-     */
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.setSmartDashboardType("SwerveDrive");
-        addModuleSendable(builder, getBackLeftModule(), "Back Left");
-        addModuleSendable(builder, getBackRightModule(), "Back Right");
-        addModuleSendable(builder, getFrontLeftModule(), "Front Left");
-        addModuleSendable(builder, getFrontRightModule(), "Front Right");
+        addModuleSendable(builder, frontLeftModule);
+        addModuleSendable(builder, frontRightModule);
+        addModuleSendable(builder, backLeftModule);
+        addModuleSendable(builder, backRightModule);
         builder.addDoubleProperty("Robot Angle", () -> getAngle().getDegrees(), null);
     }
 
-    private void addModuleSendable(SendableBuilder builder, SwerveModule module, String name) {
-        builder.addDoubleProperty(name + " Angle",
-                () -> module.getModuleState().angle.getDegrees(), null);
-        builder.addDoubleProperty(name + " Velocity",
-                () -> module.getModuleState().speedMetersPerSecond, null);
+    private void addModuleSendable(SendableBuilder builder, SwerveModule module) {
+        builder.addDoubleProperty(module.getName() + " Measured Angle",
+                () -> module.getMeasuredState().angle.getDegrees(), null);
+        builder.addDoubleProperty(module.getName() + " Measured Velocity",
+                () -> module.getMeasuredState().speedMetersPerSecond, null);
+    }
+
+    public SwerveModuleState[] getMeasuredModuleStates() {
+        return new SwerveModuleState[]{
+                frontLeftModule.getMeasuredState(), frontRightModule.getMeasuredState(),
+                backLeftModule.getMeasuredState(), backRightModule.getMeasuredState()
+        };
+    }
+
+    public SwerveModuleState[] getTargetModuleStates() {
+        return new SwerveModuleState[]{
+                frontLeftModule.getTargetState(), frontRightModule.getTargetState(),
+                backLeftModule.getTargetState(), backRightModule.getTargetState()
+        };
     }
 }

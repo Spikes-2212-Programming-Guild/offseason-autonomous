@@ -1,17 +1,17 @@
 package frc.robot;
 
-import com.spikes2212.util.PlaystationControllerWrapper;
+import com.spikes2212.util.XboxControllerWrapper;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.swerve.subsystem.Swerve;
 
 public class OI /*GEVALD*/ {
 
-    private final PlaystationControllerWrapper controller;
+    private final XboxControllerWrapper controller;
 
     public OI() {
-        controller = new PlaystationControllerWrapper(0);
+        controller = new XboxControllerWrapper(0);
 
-        controller.getCircleButton().onTrue(new InstantCommand(() -> Swerve.getInstance().resetFieldRelativity()));
+        controller.getBButton().onTrue(new InstantCommand(() -> Swerve.getInstance().resetFieldRelativity()));
     }
 
     public double getLeftX() {

@@ -1,7 +1,7 @@
 package com.spikes2212.command.drivetrains.swerve;
 
 import com.spikes2212.command.DashboardedSubsystem;
-import com.spikes2212.control.FeedForwardSettings;
+import com.spikes2212.control.FFSettings;
 import com.spikes2212.control.PIDSettings;
 import com.spikes2212.util.UnifiedControlMode;
 import com.spikes2212.util.smartmotorcontrollers.SmartMotorController;
@@ -34,32 +34,34 @@ public abstract class SwerveModule extends DashboardedSubsystem {
 
     protected PIDSettings driveMotorPIDSettings;
     protected PIDSettings turnMotorPIDSettings;
-    protected FeedForwardSettings driveMotorFeedForwardSettings;
-    protected FeedForwardSettings turnMotorFeedForwardSettings;
+    protected FFSettings driveMotorFFSettings;
+    protected FFSettings turnMotorFFSettings;
 
     protected final boolean updateTurnPeriodically;
     protected final boolean updateDrivePeriodically;
 
+    protected SwerveModuleState targetState = new SwerveModuleState();
+
     /**
      * Constructs a new instance of  {@link SwerveModule}.
      *
-     * @param namespaceName                 the namespace name used for the module
-     * @param driveMotor                    the motor that is used for turning the wheel in the pitch axis
-     * @param turnMotor                     the motor that is used fot turning the wheel in the yaw axis
-     * @param driveMotorInverted            whether the drive motor is inverted or not
-     * @param turnMotorInverted             whether the turn motor is inverted ot not
-     * @param absoluteEncoderOffset         absolute encoder offset while wheel is parallel to the track
-     * @param driveMotorPIDSettings         the drive motor pid settings
-     * @param turnMotorPIDSettings          the turn motor pid settings
-     * @param driveMotorFeedForwardSettings the drive motor feed forward settings
-     * @param turnMotorFeedForwardSettings  the turn motor feed forward settings
-     * @param minSpeedLimit                 a speed limit intended for dealing with stick drift
+     * @param namespaceName         the namespace name used for the module
+     * @param driveMotor            the motor that is used for turning the wheel in the pitch axis
+     * @param turnMotor             the motor that is used fot turning the wheel in the yaw axis
+     * @param driveMotorInverted    whether the drive motor is inverted or not
+     * @param turnMotorInverted     whether the turn motor is inverted ot not
+     * @param absoluteEncoderOffset absolute encoder offset while wheel is parallel to the track
+     * @param driveMotorPIDSettings the drive motor pid settings
+     * @param turnMotorPIDSettings  the turn motor pid settings
+     * @param driveMotorFFSettings  the drive motor feed forward settings
+     * @param turnMotorFFSettings   the turn motor feed forward settings
+     * @param minSpeedLimit         a speed limit intended for dealing with stick drift
      */
     public SwerveModule(String namespaceName, SmartMotorController driveMotor, SmartMotorController turnMotor,
                         boolean driveMotorInverted, boolean turnMotorInverted, double absoluteEncoderOffset,
                         PIDSettings driveMotorPIDSettings, PIDSettings turnMotorPIDSettings,
-                        FeedForwardSettings driveMotorFeedForwardSettings,
-                        FeedForwardSettings turnMotorFeedForwardSettings, double minSpeedLimit,
+                        FFSettings driveMotorFFSettings,
+                        FFSettings turnMotorFFSettings, double minSpeedLimit,
                         boolean updateDrivePeriodically, boolean updateTurnPeriodically) {
         super(namespaceName);
         this.driveMotor = driveMotor;
@@ -69,8 +71,8 @@ public abstract class SwerveModule extends DashboardedSubsystem {
         this.absoluteEncoderOffset = absoluteEncoderOffset;
         this.driveMotorPIDSettings = driveMotorPIDSettings;
         this.turnMotorPIDSettings = turnMotorPIDSettings;
-        this.driveMotorFeedForwardSettings = driveMotorFeedForwardSettings;
-        this.turnMotorFeedForwardSettings = turnMotorFeedForwardSettings;
+        this.driveMotorFFSettings = driveMotorFFSettings;
+        this.turnMotorFFSettings = turnMotorFFSettings;
         this.minSpeedLimit = minSpeedLimit;
         this.updateDrivePeriodically = updateDrivePeriodically;
         this.updateTurnPeriodically = updateTurnPeriodically;
@@ -98,18 +100,16 @@ public abstract class SwerveModule extends DashboardedSubsystem {
     /**
      * Sets the desired module state.
      *
-     * @param targetState         the desired state of the module
-     * @param maxPossibleVelocity the maximum possible velocity of the drive motor
-     * @param useVelocityPID      whether the module will drive with P.I.D for the velocity
+     * @param targetState the desired state of the module
      */
-    public void setTargetState(SwerveModuleState targetState, double maxPossibleVelocity, boolean useVelocityPID) {
+    public void setTargetState(SwerveModuleState targetState) {
         targetState = optimize(targetState, getRelativeModuleAngle());
         if (Math.abs(targetState.speedMetersPerSecond) <= minSpeedLimit) {
             stop();
             return;
         }
         setTargetAngle(targetState.angle);
-        setTargetVelocity(targetState.speedMetersPerSecond, maxPossibleVelocity, useVelocityPID);
+        setTargetVelocity(targetState.speedMetersPerSecond);
     }
 
     /**
@@ -152,92 +152,65 @@ public abstract class SwerveModule extends DashboardedSubsystem {
      * @param targetAngle the desired angle of the module
      */
     public void setTargetAngle(Rotation2d targetAngle) {
+        targetState.angle = targetAngle;
         turnMotor.pidSet(UnifiedControlMode.POSITION, targetAngle.getDegrees(), turnMotorPIDSettings,
-                turnMotorFeedForwardSettings, updateTurnPeriodically);
+                turnMotorFFSettings, updateTurnPeriodically);
     }
 
     /**
      * Sets the desired module velocity.
      *
-     * @param targetVelocity      the desired velocity of the module
-     * @param maxPossibleVelocity the maximum possible velocity of the drive motor
-     * @param useVelocityPID      whether the module will drive with P.I.D for the velocity
+     * @param targetVelocity the desired velocity of the module
      */
-    public void setTargetVelocity(double targetVelocity, double maxPossibleVelocity, boolean useVelocityPID) {
-        if (useVelocityPID) {
-            driveMotor.pidSet(UnifiedControlMode.VELOCITY, targetVelocity, driveMotorPIDSettings,
-                    driveMotorFeedForwardSettings, updateDrivePeriodically);
-        } else {
-            driveMotor.set(targetVelocity / maxPossibleVelocity);
-        }
+    public void setTargetVelocity(double targetVelocity) {
+        this.targetState.speedMetersPerSecond = targetVelocity;
+        driveMotor.pidSet(UnifiedControlMode.VELOCITY, targetVelocity, driveMotorPIDSettings,
+                driveMotorFFSettings, updateDrivePeriodically);
     }
 
-    /**
-     * @return the current state of the module
-     */
-    public SwerveModuleState getModuleState() {
+    public SwerveModuleState getMeasuredState() {
         return new SwerveModuleState(getDrivingVelocity(), Rotation2d.fromDegrees(getRelativeModuleAngle()));
     }
 
-    /**
-     * @return the current relative module angle
-     */
+    public SwerveModuleState getTargetState() {
+        return targetState;
+    }
+
     public double getRelativeModuleAngle() {
         return turnMotor.getPosition();
     }
 
     /**
-     * @return the current module velocity
+     * @return the current module velocity in meters per second
      */
     public double getDrivingVelocity() {
         return driveMotor.getVelocity();
     }
 
-    /**
-     * @return the {@link SwerveModulePosition} of this module
-     */
     public SwerveModulePosition getModulePosition() {
         return new SwerveModulePosition(driveMotor.getPosition(), getAbsoluteModuleAngle());
     }
 
-    /**
-     * @return the drive motors {@link PIDSettings}
-     */
     public PIDSettings getDriveMotorPIDSettings() {
         return driveMotorPIDSettings;
     }
 
-    /**
-     * @return the turn motors {@link PIDSettings}
-     */
     public PIDSettings getTurnMotorPIDSettings() {
         return turnMotorPIDSettings;
     }
 
-    /**
-     * @return the drive motors {@link FeedForwardSettings}
-     */
-    public FeedForwardSettings getDriveMotorFeedForwardSettings() {
-        return driveMotorFeedForwardSettings;
+    public FFSettings getDriveMotorFeedForwardSettings() {
+        return driveMotorFFSettings;
     }
 
-    /**
-     * @return the turn motors {@link FeedForwardSettings}
-     */
-    public FeedForwardSettings getTurnMotorFeedForwardSettings() {
-        return turnMotorFeedForwardSettings;
+    public FFSettings getTurnMotorFeedForwardSettings() {
+        return turnMotorFFSettings;
     }
 
-    /**
-     * @return the {@link SmartMotorController} that turns the current {@link SwerveModule}
-     */
     public SmartMotorController getTurnMotor() {
         return turnMotor;
     }
 
-    /**
-     * @return the {@link SmartMotorController} that drives the current {@link SwerveModule}
-     */
     public SmartMotorController getDriveMotor() {
         return driveMotor;
     }

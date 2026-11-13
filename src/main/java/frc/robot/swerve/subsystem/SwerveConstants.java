@@ -1,8 +1,8 @@
 package frc.robot.swerve.subsystem;
 
 import com.ctre.phoenix6.CANBus;
-import com.spikes2212.control.FeedForwardController;
-import com.spikes2212.control.FeedForwardSettings;
+import com.spikes2212.control.FFController;
+import com.spikes2212.control.FFSettings;
 import com.spikes2212.control.PIDSettings;
 
 public class SwerveConstants {
@@ -18,21 +18,21 @@ public class SwerveConstants {
 
         PIDSettings DRIVE_PID_SETTINGS = new PIDSettings(
                 0.015, 0, 0, 0, 0, 0);
-        FeedForwardSettings DRIVE_FF_SETTINGS = new FeedForwardSettings(
-                0.014, 0.175, 0, FeedForwardController.ControlMode.LINEAR_VELOCITY);
+        FFSettings DRIVE_FF_SETTINGS = new FFSettings(
+                0.014, 0.175, 0, FFController.ControlMode.LINEAR_VELOCITY);
         PIDSettings TURN_PID_SETTINGS = new PIDSettings(
                 0.02, 0, 0.0001, 0, 0, 0);
-        FeedForwardSettings TURN_FF_SETTINGS =
-                new FeedForwardSettings(FeedForwardController.ControlMode.LINEAR_POSITION);
+        FFSettings TURN_FF_SETTINGS =
+                new FFSettings(FFController.ControlMode.LINEAR_POSITION);
 
         PIDSettings SIM_DRIVE_PID_SETTINGS = new PIDSettings(
                 0, 0, 0);
-        FeedForwardSettings SIM_DRIVE_FF_SETTINGS = new FeedForwardSettings(
-                0.191, 0, FeedForwardController.ControlMode.LINEAR_VELOCITY);
+        FFSettings SIM_DRIVE_FF_SETTINGS = new FFSettings(
+                0.191, 0, FFController.ControlMode.LINEAR_VELOCITY);
         PIDSettings SIM_TURN_PID_SETTINGS = new PIDSettings(
                 0.02, 0, 0.0001, 0, 0, 0);
-        FeedForwardSettings SIM_TURN_FF_SETTINGS =
-                new FeedForwardSettings(FeedForwardController.ControlMode.LINEAR_POSITION);
+        FFSettings SIM_TURN_FF_SETTINGS =
+                new FFSettings(FFController.ControlMode.LINEAR_POSITION);
 
         boolean UPDATE_TURN_PERIODICALLY = false;
         boolean UPDATE_DRIVE_PERIODICALLY = false;

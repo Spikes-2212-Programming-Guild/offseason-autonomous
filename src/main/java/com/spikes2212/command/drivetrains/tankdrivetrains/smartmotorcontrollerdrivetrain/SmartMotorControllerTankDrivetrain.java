@@ -1,7 +1,7 @@
 package com.spikes2212.command.drivetrains.tankdrivetrains.smartmotorcontrollerdrivetrain;
 
 import com.spikes2212.command.drivetrains.tankdrivetrains.TankDrivetrain;
-import com.spikes2212.control.FeedForwardSettings;
+import com.spikes2212.control.FFSettings;
 import com.spikes2212.control.PIDSettings;
 import com.spikes2212.control.TrapezoidProfileSettings;
 import com.spikes2212.util.UnifiedControlMode;
@@ -18,7 +18,7 @@ public interface SmartMotorControllerTankDrivetrain extends Subsystem {
      * Configures the loop's PID constants and feed forward gains.
      */
     default void configPIDF(PIDSettings leftPIDSettings, PIDSettings rightPIDSettings,
-                            FeedForwardSettings feedForwardSettings) {
+                            FFSettings ffSettings) {
     }
 
     /**
@@ -31,9 +31,9 @@ public interface SmartMotorControllerTankDrivetrain extends Subsystem {
      * Configures the loop's settings.
      */
     default void configureLoop(PIDSettings leftPIDSettings, PIDSettings rightPIDSettings,
-                               FeedForwardSettings feedForwardSettings,
+                               FFSettings ffSettings,
                                TrapezoidProfileSettings trapezoidProfileSettings) {
-        configPIDF(leftPIDSettings, rightPIDSettings, feedForwardSettings);
+        configPIDF(leftPIDSettings, rightPIDSettings, ffSettings);
         configureTrapezoid(trapezoidProfileSettings);
     }
 
@@ -41,8 +41,8 @@ public interface SmartMotorControllerTankDrivetrain extends Subsystem {
      * Configures the loop's settings.
      */
     default void configureLoop(PIDSettings leftPIDSettings, PIDSettings rightPIDSettings,
-                               FeedForwardSettings feedForwardSettings) {
-        configureLoop(leftPIDSettings, rightPIDSettings, feedForwardSettings,
+                               FFSettings ffSettings) {
+        configureLoop(leftPIDSettings, rightPIDSettings, ffSettings,
                 TrapezoidProfileSettings.EMPTY_TRAPEZOID_PROFILE_SETTINGS);
     }
 
@@ -54,11 +54,11 @@ public interface SmartMotorControllerTankDrivetrain extends Subsystem {
      * @param rightSetpoint            the right side loop's target setpoint
      * @param leftPIDSettings          the left side's PID constants
      * @param rightPIDSettings         the right side's PID constants
-     * @param feedForwardSettings      the feed forward gains
+     * @param ffSettings      the feed forward gains
      * @param trapezoidProfileSettings the trapezoid profile settings
      */
     void pidSet(UnifiedControlMode controlMode, double leftSetpoint, double rightSetpoint, PIDSettings leftPIDSettings,
-                PIDSettings rightPIDSettings, FeedForwardSettings feedForwardSettings,
+                PIDSettings rightPIDSettings, FFSettings ffSettings,
                 TrapezoidProfileSettings trapezoidProfileSettings);
 
     /**
@@ -69,12 +69,12 @@ public interface SmartMotorControllerTankDrivetrain extends Subsystem {
      * @param rightSetpoint       the right side loop's target setpoint
      * @param leftPIDSettings     the left side's PID constants
      * @param rightPIDSettings    the right side's PID constants
-     * @param feedForwardSettings the feed forward gains
+     * @param ffSettings the feed forward gains
      */
     default void pidSet(UnifiedControlMode controlMode, double leftSetpoint, double rightSetpoint,
                         PIDSettings leftPIDSettings, PIDSettings rightPIDSettings,
-                        FeedForwardSettings feedForwardSettings) {
-        pidSet(controlMode, leftSetpoint, rightSetpoint, leftPIDSettings, rightPIDSettings, feedForwardSettings,
+                        FFSettings ffSettings) {
+        pidSet(controlMode, leftSetpoint, rightSetpoint, leftPIDSettings, rightPIDSettings, ffSettings,
                 TrapezoidProfileSettings.EMPTY_TRAPEZOID_PROFILE_SETTINGS);
     }
 

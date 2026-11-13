@@ -21,6 +21,7 @@ public abstract class DashboardedSubsystem extends SubsystemBase {
     protected final Namespace namespace;
 
     public DashboardedSubsystem(Namespace namespace) {
+        super(namespace.getName());
         this.namespace = namespace;
     }
 

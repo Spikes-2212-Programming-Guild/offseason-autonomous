@@ -8,7 +8,7 @@ import com.ctre.phoenix6.controls.*;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.spikes2212.command.drivetrains.tankdrivetrains.TankDrivetrain;
-import com.spikes2212.control.FeedForwardSettings;
+import com.spikes2212.control.FFSettings;
 import com.spikes2212.control.PIDSettings;
 import com.spikes2212.control.TrapezoidProfileSettings;
 import com.spikes2212.util.UnifiedControlMode;
@@ -98,24 +98,24 @@ public class TalonFXTankDrivetrain extends TankDrivetrain implements SmartMotorC
      */
     @Override
     public void configPIDF(PIDSettings leftPIDSettings, PIDSettings rightPIDSettings,
-                           FeedForwardSettings feedForwardSettings) {
+                           FFSettings ffSettings) {
         Slot0Configs leftConfig = new Slot0Configs();
         Slot0Configs rightConfig = new Slot0Configs();
         leftConfig.kP = leftPIDSettings.getkP();
         leftConfig.kI = leftPIDSettings.getkI();
         leftConfig.kD = leftPIDSettings.getkD();
-        leftConfig.kS = feedForwardSettings.getkS();
-        leftConfig.kV = feedForwardSettings.getkV();
-        leftConfig.kA = feedForwardSettings.getkA();
-        leftConfig.kG = feedForwardSettings.getkG();
+        leftConfig.kS = ffSettings.getkS();
+        leftConfig.kV = ffSettings.getkV();
+        leftConfig.kA = ffSettings.getkA();
+        leftConfig.kG = ffSettings.getkG();
         leftMaster.getConfigurator().apply(leftConfig);
         rightConfig.kP = rightPIDSettings.getkP();
         rightConfig.kI = rightPIDSettings.getkI();
         rightConfig.kD = rightPIDSettings.getkD();
-        rightConfig.kS = feedForwardSettings.getkS();
-        rightConfig.kV = feedForwardSettings.getkV();
-        rightConfig.kA = feedForwardSettings.getkA();
-        rightConfig.kG = feedForwardSettings.getkG();
+        rightConfig.kS = ffSettings.getkS();
+        rightConfig.kV = ffSettings.getkV();
+        rightConfig.kA = ffSettings.getkA();
+        rightConfig.kG = ffSettings.getkG();
         rightMaster.getConfigurator().apply(rightConfig);
     }
 
@@ -137,11 +137,11 @@ public class TalonFXTankDrivetrain extends TankDrivetrain implements SmartMotorC
      */
     @Override
     public void configureLoop(PIDSettings leftPIDSettings, PIDSettings rightPIDSettings,
-                              FeedForwardSettings feedForwardSettings,
+                              FFSettings ffSettings,
                               TrapezoidProfileSettings trapezoidProfileSettings) {
         leftMaster.getConfigurator().apply(new TalonFXConfiguration());
         rightMaster.getConfigurator().apply(new TalonFXConfiguration());
-        configPIDF(leftPIDSettings, rightPIDSettings, feedForwardSettings);
+        configPIDF(leftPIDSettings, rightPIDSettings, ffSettings);
         configureTrapezoid(trapezoidProfileSettings);
     }
 
@@ -153,14 +153,14 @@ public class TalonFXTankDrivetrain extends TankDrivetrain implements SmartMotorC
      * @param rightSetpoint            the right side's loop's target setpoint
      * @param leftPIDSettings          the left side's PID constants
      * @param rightPIDSettings         the right side's PID constants
-     * @param feedForwardSettings      the feed forward gains
+     * @param ffSettings      the feed forward gains
      * @param trapezoidProfileSettings the trapezoid profile settings
      */
     @Override
     public void pidSet(UnifiedControlMode controlMode, double leftSetpoint, double rightSetpoint,
                        PIDSettings leftPIDSettings, PIDSettings rightPIDSettings,
-                       FeedForwardSettings feedForwardSettings, TrapezoidProfileSettings trapezoidProfileSettings) {
-        configPIDF(leftPIDSettings, rightPIDSettings, feedForwardSettings);
+                       FFSettings ffSettings, TrapezoidProfileSettings trapezoidProfileSettings) {
+        configPIDF(leftPIDSettings, rightPIDSettings, ffSettings);
         ControlRequest leftRequest = switch (controlMode) {
             case CURRENT -> new TorqueCurrentFOC(leftSetpoint);
             case PERCENT_OUTPUT -> new DutyCycleOut(leftSetpoint);

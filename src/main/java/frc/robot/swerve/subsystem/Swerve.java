@@ -1,8 +1,10 @@
 package frc.robot.swerve.subsystem;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
+import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.spikes2212.command.drivetrains.swerve.SwerveDrivetrain;
 import com.spikes2212.command.drivetrains.swerve.SwerveModule;
+import com.spikes2212.command.drivetrains.swerve.commands.DriveSwerve;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -10,9 +12,13 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotMap;
+
+import java.util.function.Supplier;
 
 import static frc.robot.swerve.subsystem.SwerveConstants.DRIVETRAIN.*;
 
@@ -23,7 +29,6 @@ public class Swerve extends SwerveDrivetrain {
 
     private final boolean isSimulated;
 
-    private double simulatedYawDegrees;
     Pose2d simPose = new Pose2d();
 
     private static SwerveDrivePoseEstimator odometry;
@@ -61,7 +66,7 @@ public class Swerve extends SwerveDrivetrain {
     @Override
     public Rotation2d getAngle() {
         if (isSimulated) {
-            return Rotation2d.fromDegrees(simulatedYawDegrees);
+            return simPose.getRotation();
         }
         return gyro.getRotation2d();
     }
@@ -74,7 +79,6 @@ public class Swerve extends SwerveDrivetrain {
     public void setGyro(double angle) {
         gyro.setYaw(angle);
         if (isSimulated) {
-            simulatedYawDegrees = angle;
             simPose = new Pose2d(simPose.getTranslation(), Rotation2d.fromDegrees(angle));
         }
     }
@@ -100,6 +104,7 @@ public class Swerve extends SwerveDrivetrain {
     }
 
     private boolean atAxis(double currentAxisPose, double targetAxisPose, double currentVelocity) {
+        // TODO - fix wrapping breaking "atPose"
         boolean atPose = MathUtil.isNear(targetAxisPose, currentAxisPose, TRANSLATION_POSE_TOLERANCE);
         boolean robotStill = Math.abs(currentVelocity) <= TRANSLATION_VELOCITY_TOLERANCE;
         return atPose && robotStill;
@@ -133,6 +138,26 @@ public class Swerve extends SwerveDrivetrain {
     }
 
     @Override
+    public void periodic() {
+        super.periodic();
+        updateOdometry();
+    }
+
+    /**
+     * converts controller coordinate system to wpilib coordinate system (blue/red depends on the game)
+     */
+    public Command driveWithController(Supplier<Double> leftX, Supplier<Double> leftY, Supplier<Double> rightX,
+                                       boolean isFieldRelative) {
+        Supplier<Double> allianceMultiplier = () -> isFieldRelative && DriverStation.getAlliance()
+                .orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Blue ? 1.0 : -1.0;
+
+        return new DriveSwerve(
+                this, () -> -leftY.get() * allianceMultiplier.get(),
+                () -> -leftX.get() * allianceMultiplier.get(), () -> -rightX.get(), isFieldRelative
+        );
+    }
+
+    @Override
     public void simulationPeriodic() {
         ChassisSpeeds speeds = getSpeeds();
         simPose = simPose.exp(new Twist2d(
@@ -141,7 +166,6 @@ public class Swerve extends SwerveDrivetrain {
                 speeds.omegaRadiansPerSecond * DELTA_TIME)
         );
 
-        simulatedYawDegrees = simPose.getRotation().getDegrees();
-        field2d.setRobotPose(simPose);
+        field2d.setRobotPose(odometry.getEstimatedPosition());
     }
 }

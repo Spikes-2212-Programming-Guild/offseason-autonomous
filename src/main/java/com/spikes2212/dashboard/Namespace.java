@@ -1,7 +1,7 @@
 package com.spikes2212.dashboard;
 
-import com.spikes2212.control.FeedForwardController;
-import com.spikes2212.control.FeedForwardSettings;
+import com.spikes2212.control.FFController;
+import com.spikes2212.control.FFSettings;
 import com.spikes2212.control.PIDSettings;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.util.sendable.Sendable;
@@ -212,24 +212,26 @@ public interface Namespace {
     }
 
     /**
-     * Adds a set of {@link FeedForwardSettings} values to a designated {@link ChildNamespace}.
+     * Adds a set of {@link FFSettings} values to a designated {@link ChildNamespace}.
      *
      * @param name                       the name to be given to the settings and the child namespace
-     * @param initialFeedForwardSettings the initial feed forward settings to be added
+     * @param initialFFSettings the initial feed forward settings to be added
      * @return feed forward settings with the values from the network tables
      */
-    default FeedForwardSettings addFeedForwardNamespace(String name, FeedForwardSettings initialFeedForwardSettings) {
+    default FFSettings addFeedForwardNamespace(String name, FFSettings initialFFSettings) {
         ChildNamespace child = this.addChild(name + " feed forward");
-        Supplier<Double> kS = child.addConstantDouble(name + " kS", initialFeedForwardSettings.getkS());
-        Supplier<Double> kV = child.addConstantDouble(name + " kV", initialFeedForwardSettings.getkV());
-        Supplier<Double> kA = child.addConstantDouble(name + " kA", initialFeedForwardSettings.getkA());
-        Supplier<Double> kG = child.addConstantDouble(name + " kG", initialFeedForwardSettings.getkG());
-        return new FeedForwardSettings(kS, kV, kA, kG, initialFeedForwardSettings.getControlMode());
+        Supplier<Double> kS = child.addConstantDouble(name + " kS", initialFFSettings.getkS());
+        Supplier<Double> kV = child.addConstantDouble(name + " kV", initialFFSettings.getkV());
+        Supplier<Double> kA = child.addConstantDouble(name + " kA", initialFFSettings.getkA());
+        Supplier<Double> kG = child.addConstantDouble(name + " kG", initialFFSettings.getkG());
+        return new FFSettings(kS, kV, kA, kG, initialFFSettings.getControlMode());
     }
 
-    default FeedForwardSettings addFeedForwardNamespace(String name, FeedForwardController.ControlMode controlMode) {
-        return addFeedForwardNamespace(name, new FeedForwardSettings(controlMode));
+    default FFSettings addFeedForwardNamespace(String name, FFController.ControlMode controlMode) {
+        return addFeedForwardNamespace(name, new FFSettings(controlMode));
     }
+
+    abstract String getName();
 
     /**
      * Updates the namespace.

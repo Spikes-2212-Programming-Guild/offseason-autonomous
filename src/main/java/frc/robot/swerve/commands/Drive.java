@@ -8,7 +8,7 @@ import java.util.function.Supplier;
 public class Drive extends DriveSwerve {
 
     public Drive(Supplier<Double> xSpeed, Supplier<Double> ySpeed, Supplier<Double>
-            rotationSpeed, boolean isFieldRelative, boolean useVelocityPID) {
-        super(Swerve.getInstance(), xSpeed, ySpeed, rotationSpeed, isFieldRelative, useVelocityPID);
+            rotationSpeed, boolean isFieldRelative) {
+        super(Swerve.getInstance(), xSpeed, ySpeed, rotationSpeed, isFieldRelative);
     }
 }

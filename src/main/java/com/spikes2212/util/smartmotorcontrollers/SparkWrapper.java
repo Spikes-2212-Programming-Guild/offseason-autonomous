@@ -4,8 +4,8 @@ import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.*;
 import com.revrobotics.spark.config.*;
-import com.spikes2212.control.FeedForwardController;
-import com.spikes2212.control.FeedForwardSettings;
+import com.spikes2212.control.FFController;
+import com.spikes2212.control.FFSettings;
 import com.spikes2212.control.PIDSettings;
 import com.spikes2212.control.TrapezoidProfileSettings;
 import com.spikes2212.util.UnifiedControlMode;
@@ -26,7 +26,7 @@ public class SparkWrapper implements SmartMotorController {
     /**
      * The feed forward controller running the feed forward calculations.
      */
-    private final FeedForwardController feedForwardController;
+    private final FFController ffController;
 
     /**
      * The spark motor controller.
@@ -65,7 +65,7 @@ public class SparkWrapper implements SmartMotorController {
      * @param controlMode the type of feed forward control to use
      */
     public static SparkWrapper createSparkMax(int deviceID, SparkLowLevel.MotorType type,
-                                              FeedForwardController.ControlMode controlMode) {
+                                              FFController.ControlMode controlMode) {
         SparkWrapper sparkWrapper = new SparkWrapper(controlMode);
         sparkWrapper.sparkBase = new SparkMax(deviceID, type);
         sparkWrapper.sparkConfig = new SparkMaxConfig();
@@ -75,13 +75,13 @@ public class SparkWrapper implements SmartMotorController {
 
     /**
      * Constructs a new instance of {@link SparkWrapper} with a {@link SparkMax} as the motor controller and with a
-     * default {@link FeedForwardController.ControlMode} of linear velocity.
+     * default {@link FFController.ControlMode} of linear velocity.
      *
      * @param deviceID the spark's ID
      * @param type     the motor type
      */
     public static SparkWrapper createSparkMax(int deviceID, SparkLowLevel.MotorType type) {
-        return createSparkMax(deviceID, type, FeedForwardController.ControlMode.LINEAR_VELOCITY);
+        return createSparkMax(deviceID, type, FFController.ControlMode.LINEAR_VELOCITY);
     }
 
     /**
@@ -92,7 +92,7 @@ public class SparkWrapper implements SmartMotorController {
      * @param controlMode the type of feed forward control to use
      */
     public static SparkWrapper createSparkFlex(int deviceID, SparkLowLevel.MotorType type,
-                                               FeedForwardController.ControlMode controlMode) {
+                                               FFController.ControlMode controlMode) {
         SparkWrapper sparkWrapper = new SparkWrapper(controlMode);
         sparkWrapper.sparkBase = new SparkFlex(deviceID, type);
         sparkWrapper.sparkConfig = new SparkFlexConfig();
@@ -102,17 +102,17 @@ public class SparkWrapper implements SmartMotorController {
 
     /**
      * Constructs a new instance of {@link SparkWrapper} with a {@link SparkFlex} as the motor controller and with a
-     * default {@link FeedForwardController.ControlMode} of linear velocity.
+     * default {@link FFController.ControlMode} of linear velocity.
      *
      * @param deviceID the spark's ID
      * @param type     the motor type
      */
     public static SparkWrapper createSparkFlex(int deviceID, SparkLowLevel.MotorType type) {
-        return createSparkFlex(deviceID, type, FeedForwardController.ControlMode.LINEAR_VELOCITY);
+        return createSparkFlex(deviceID, type, FFController.ControlMode.LINEAR_VELOCITY);
     }
 
-    private SparkWrapper(FeedForwardController.ControlMode controlMode) {
-        feedForwardController = new FeedForwardController(new FeedForwardSettings(controlMode));
+    private SparkWrapper(FFController.ControlMode controlMode) {
+        ffController = new FFController(new FFSettings(controlMode));
         closedLoopConfig = new ClosedLoopConfig();
         encoderConfig = new EncoderConfig();
     }
@@ -232,8 +232,8 @@ public class SparkWrapper implements SmartMotorController {
     }
 
     @Override
-    public void configureFF(FeedForwardSettings feedForwardSettings) {
-        feedForwardController.setGains(feedForwardSettings);
+    public void configureFF(FFSettings ffSettings) {
+        ffController.setGains(ffSettings);
     }
 
     @Override
@@ -254,40 +254,40 @@ public class SparkWrapper implements SmartMotorController {
 
     @Override
     public void pidSet(UnifiedControlMode controlMode, double setpoint, PIDSettings pidSettings,
-                       FeedForwardSettings feedForwardSettings, TrapezoidProfileSettings trapezoidProfileSettings,
+                       FFSettings ffSettings, TrapezoidProfileSettings trapezoidProfileSettings,
                        boolean updatePeriodically) {
-        if (updatePeriodically) configureLoop(pidSettings, feedForwardSettings, trapezoidProfileSettings);
+        if (updatePeriodically) configureLoop(pidSettings, ffSettings, trapezoidProfileSettings);
         double source;
-        if (feedForwardController.getControlMode() == FeedForwardController.ControlMode.LINEAR_POSITION ||
-                feedForwardController.getControlMode() == FeedForwardController.ControlMode.ANGULAR_POSITION) {
+        if (ffController.getControlMode() == FFController.ControlMode.LINEAR_POSITION ||
+                ffController.getControlMode() == FFController.ControlMode.ANGULAR_POSITION) {
             source = sparkBase.getEncoder().getPosition();
         } else {
             source = sparkBase.getEncoder().getVelocity();
         }
         sparkBase.getClosedLoopController().setReference(setpoint, controlMode.getSparkControlType(),
-                ClosedLoopSlot.kSlot0, feedForwardController.calculate(source, setpoint));
+                ClosedLoopSlot.kSlot0, ffController.calculate(source, setpoint));
     }
 
     @Override
     public void pidSet(UnifiedControlMode controlMode, double setpoint, double acceleration, PIDSettings pidSettings,
-                       FeedForwardSettings feedForwardSettings, boolean updatePeriodically) {
-        if (updatePeriodically) configureLoop(pidSettings, feedForwardSettings,
+                       FFSettings ffSettings, boolean updatePeriodically) {
+        if (updatePeriodically) configureLoop(pidSettings, ffSettings,
                 TrapezoidProfileSettings.EMPTY_TRAPEZOID_PROFILE_SETTINGS);
         double source;
-        if (feedForwardSettings.getControlMode() == FeedForwardController.ControlMode.LINEAR_POSITION ||
-                feedForwardSettings.getControlMode() == FeedForwardController.ControlMode.ANGULAR_POSITION) {
+        if (ffSettings.getControlMode() == FFController.ControlMode.LINEAR_POSITION ||
+                ffSettings.getControlMode() == FFController.ControlMode.ANGULAR_POSITION) {
             source = sparkBase.getEncoder().getPosition();
         } else {
             source = sparkBase.getEncoder().getVelocity();
         }
             sparkBase.getClosedLoopController().setReference(setpoint, controlMode.getSparkControlType(),
-                ClosedLoopSlot.kSlot0, feedForwardController.calculate(source, setpoint, acceleration));
+                ClosedLoopSlot.kSlot0, ffController.calculate(source, setpoint, acceleration));
     }
 
     @Override
     public void pidSet(UnifiedControlMode controlMode, double setpoint, PIDSettings pidSettings,
-                       FeedForwardSettings feedForwardSettings, boolean updatePeriodically) {
-        pidSet(controlMode, setpoint, 0, pidSettings, feedForwardSettings, updatePeriodically);
+                       FFSettings ffSettings, boolean updatePeriodically) {
+        pidSet(controlMode, setpoint, 0, pidSettings, ffSettings, updatePeriodically);
     }
 
     @Override

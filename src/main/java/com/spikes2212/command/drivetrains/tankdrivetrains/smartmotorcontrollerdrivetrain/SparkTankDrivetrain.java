@@ -5,7 +5,7 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.*;
 import com.spikes2212.command.drivetrains.tankdrivetrains.TankDrivetrain;
-import com.spikes2212.control.FeedForwardSettings;
+import com.spikes2212.control.FFSettings;
 import com.spikes2212.control.PIDSettings;
 import com.spikes2212.control.TrapezoidProfileSettings;
 import com.spikes2212.util.UnifiedControlMode;
@@ -116,7 +116,7 @@ public class SparkTankDrivetrain extends TankDrivetrain implements SmartMotorCon
      */
     @Override
     public void configPIDF(PIDSettings leftPIDSettings, PIDSettings rightPIDSettings,
-                           FeedForwardSettings feedForwardSettings) {
+                           FFSettings ffSettings) {
         ClosedLoopConfig leftClosedLoopConfig = new ClosedLoopConfig();
         leftClosedLoopConfig.pid(leftPIDSettings.getkP(), leftPIDSettings.getkI(), leftPIDSettings.getkD());
         leftClosedLoopConfig.iZone(leftPIDSettings.getIZone());
@@ -151,7 +151,7 @@ public class SparkTankDrivetrain extends TankDrivetrain implements SmartMotorCon
      */
     @Override
     public void configureLoop(PIDSettings leftPIDSettings, PIDSettings rightPIDSettings,
-                              FeedForwardSettings feedForwardSettings,
+                              FFSettings ffSettings,
                               TrapezoidProfileSettings trapezoidProfileSettings) {
         leftMaster.configure(leftConfig, SparkBase.ResetMode.kResetSafeParameters,
                 SparkBase.PersistMode.kNoPersistParameters);
@@ -164,7 +164,7 @@ public class SparkTankDrivetrain extends TankDrivetrain implements SmartMotorCon
         rightSlaves.forEach(s -> s.configure(rightConfig, SparkBase.ResetMode.kNoResetSafeParameters,
                 SparkBase.PersistMode.kNoPersistParameters));
 
-        configPIDF(leftPIDSettings, rightPIDSettings, feedForwardSettings);
+        configPIDF(leftPIDSettings, rightPIDSettings, ffSettings);
         configureTrapezoid(trapezoidProfileSettings);
     }
 
@@ -176,14 +176,14 @@ public class SparkTankDrivetrain extends TankDrivetrain implements SmartMotorCon
      * @param rightSetpoint            the right side loop's target setpoint
      * @param leftPIDSettings          the left side's PID constants
      * @param rightPIDSettings         the right side's PID constants
-     * @param feedForwardSettings      the feed forward gains
+     * @param ffSettings      the feed forward gains
      * @param trapezoidProfileSettings the trapezoid profile settings
      */
     @Override
     public void pidSet(UnifiedControlMode controlMode, double leftSetpoint, double rightSetpoint,
                        PIDSettings leftPIDSettings, PIDSettings rightPIDSettings,
-                       FeedForwardSettings feedForwardSettings, TrapezoidProfileSettings trapezoidProfileSettings) {
-        configPIDF(leftPIDSettings, rightPIDSettings, feedForwardSettings);
+                       FFSettings ffSettings, TrapezoidProfileSettings trapezoidProfileSettings) {
+        configPIDF(leftPIDSettings, rightPIDSettings, ffSettings);
         configureTrapezoid(trapezoidProfileSettings);
 
         leftMaster.getClosedLoopController().setReference(leftSetpoint, controlMode.getSparkControlType());

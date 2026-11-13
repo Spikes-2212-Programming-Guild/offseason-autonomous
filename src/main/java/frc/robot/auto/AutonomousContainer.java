@@ -1,4 +1,4 @@
-package frc.robot;
+package frc.robot.auto;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
@@ -32,7 +32,7 @@ public class AutonomousContainer {
 
     private static final double ROBOT_POSE_LATENCY = 0;
     private static final double TIME_STEP = 0.02;
-//    private static final double PID_TO_POSE_TIMEOUT = 0.1;
+    //    private static final double PID_TO_POSE_TIMEOUT = 0.1;
     private static final double FF_SCALER = 1;
 
     private final PIDController xPidController;
@@ -49,7 +49,7 @@ public class AutonomousContainer {
 
     private Pose2d pathplannerTargetPose;
 
-    public AutonomousContainer(Swerve drivetrain){
+    public AutonomousContainer(Swerve drivetrain) {
         this.drivetrain = drivetrain;
 
         xPidController = buildPIDControllerFromSettings(X_CONTROLLER_SETTINGS);
@@ -103,8 +103,7 @@ public class AutonomousContainer {
                 output.vyMetersPerSecond,
                 output.omegaRadiansPerSecond,
                 false,
-                TIME_STEP,
-                true
+                TIME_STEP
         );
     }
 
@@ -121,11 +120,11 @@ public class AutonomousContainer {
                 new TrapezoidProfile.Constraints(2, 4));
     }
 
-    public void configureDashboard(){
+    public void configureDashboard() {
         namespace.putBoolean("should mirror", AutonomousContainer::shouldMirror);
     }
 
-    public void updateNamespace(){
+    public void updateNamespace() {
         namespace.update();
     }
 
@@ -138,7 +137,7 @@ public class AutonomousContainer {
         try {
             return RobotConfig.fromGUISettings();
         } catch (IOException | ParseException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("path planner config missing");
         }
     }
 }

@@ -3,7 +3,7 @@ package com.spikes2212.control;
 /**
  * @author Tuval Rivkinind Barlev
  */
-public class FeedForwardController {
+public class FFController {
 
     public enum ControlMode {
 
@@ -35,7 +35,7 @@ public class FeedForwardController {
      */
     private double kG;
 
-    public FeedForwardController(double kS, double kV, double kA, double kG, ControlMode controlMode) {
+    public FFController(double kS, double kV, double kA, double kG, ControlMode controlMode) {
         this.kS = kS;
         this.kV = kV;
         this.kA = kA;
@@ -43,15 +43,15 @@ public class FeedForwardController {
         this.controlMode = controlMode;
     }
 
-    public FeedForwardController(double kV, double kA, ControlMode controlMode) {
+    public FFController(double kV, double kA, ControlMode controlMode) {
         this(0, kV, kA, 0, controlMode);
     }
 
-    public FeedForwardController(double kS, double kV, double kA, ControlMode controlMode) {
+    public FFController(double kS, double kV, double kA, ControlMode controlMode) {
         this(kS, kV, kA, 0, controlMode);
     }
 
-    public FeedForwardController(FeedForwardSettings settings) {
+    public FFController(FFSettings settings) {
         this(settings.getkS(), settings.getkV(), settings.getkA(), settings.getkG(), settings.getControlMode());
     }
 
@@ -73,9 +73,9 @@ public class FeedForwardController {
         this.kG = kG;
     }
 
-    public void setGains(FeedForwardSettings feedForwardSettings) {
-        setGains(feedForwardSettings.getkS(), feedForwardSettings.getkV(), feedForwardSettings.getkA(),
-                feedForwardSettings.getkG());
+    public void setGains(FFSettings ffSettings) {
+        setGains(ffSettings.getkS(), ffSettings.getkV(), ffSettings.getkA(),
+                ffSettings.getkG());
     }
 
     public double getkS() {

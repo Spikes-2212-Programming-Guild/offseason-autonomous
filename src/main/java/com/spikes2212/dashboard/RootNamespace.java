@@ -143,6 +143,11 @@ public class RootNamespace implements Namespace {
     }
 
     @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
     public void update() {
         updateBoolean();
         updateNumber();

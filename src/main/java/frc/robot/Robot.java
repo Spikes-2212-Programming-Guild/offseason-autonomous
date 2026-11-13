@@ -4,30 +4,29 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.commands.PathPlannerAuto;
-import com.pathplanner.lib.path.PathPlannerPath;
 import com.spikes2212.dashboard.RootNamespace;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.swerve.commands.Drive;
 import frc.robot.swerve.subsystem.Swerve;
 import frc.robot.swerve.subsystem.SwerveModuleHolder;
 
 public class Robot extends TimedRobot {
 
-    private Swerve swerve = Swerve.getInstance();
-
     RootNamespace namespace = new RootNamespace("robot");
-    AutonomousContainer container = new AutonomousContainer(swerve);
+    private final Swerve swerve = Swerve.getInstance();
+//    AutonomousContainer container = new AutonomousContainer(swerve);
 
+    private static double deadband(double input) {
+        if (Math.abs(input) < 0.05) return 0;
+        return MathUtil.copyDirectionPow(input, 2);
+    }
 
     @Override
     public void robotInit() {
         CommandScheduler.getInstance().cancelAll();
-        Command auto = new PathPlannerAuto("New Auto");
-        namespace.putCommand("auto", auto);
+//        Command auto = new PathPlannerAuto("New Auto");
+//        namespace.putCommand("auto", auto);
 //        swerve = Swerve.getInstance();
     }
 
@@ -35,8 +34,6 @@ public class Robot extends TimedRobot {
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
         SwerveModuleHolder.updateNamespace();
-        swerve.updateOdometry();
-        container.updateNamespace();
         namespace.update();
     }
 
@@ -66,18 +63,13 @@ public class Robot extends TimedRobot {
         swerve.resetRelativeEncoders();
 
         OI oi = new OI();
-        double ySpeed = 2;
-        double xSpeed = 2;
-        double rotationSpeed = 2;
-        swerve.setDefaultCommand(new Drive(
-                () -> deadband(oi.getLeftY()) * xSpeed,
-                () -> deadband(oi.getLeftX()) * ySpeed,
-                () -> deadband(oi.getRightX()) * rotationSpeed, true, true));
-    }
-
-    private static double deadband(double input) {
-        if (Math.abs(input) < 0.05) return 0;
-        return MathUtil.copyDirectionPow(input, 2);
+        double ySpeed = 5;
+        double xSpeed = 5;
+        double rotationSpeed = 5;
+        swerve.setDefaultCommand(swerve.driveWithController(
+                () -> deadband(oi.getLeftX()) * xSpeed,
+                () -> deadband(oi.getLeftY()) * ySpeed,
+                () -> deadband(oi.getRightX()) * rotationSpeed, true));
     }
 
     @Override

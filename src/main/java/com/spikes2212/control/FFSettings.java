@@ -7,18 +7,18 @@ import java.util.function.Supplier;
  *
  * @author Tal Sitton
  */
-public class FeedForwardSettings {
+public class FFSettings {
 
     /**
      * Empty FeedForwardSettings, which effectively make the FeedForwardController do nothing.
      */
-    public static final FeedForwardSettings EMPTY_FF_SETTINGS = new FeedForwardSettings(
-            FeedForwardController.ControlMode.LINEAR_POSITION);
+    public static final FFSettings EMPTY_FF_SETTINGS = new FFSettings(
+            FFController.ControlMode.LINEAR_POSITION);
 
     /**
      * The applied control mode
      */
-    private final FeedForwardController.ControlMode controlMode;
+    private final FFController.ControlMode controlMode;
 
     /**
      * The static constant
@@ -40,8 +40,8 @@ public class FeedForwardSettings {
      */
     private Supplier<Double> kG;
 
-    public FeedForwardSettings(Supplier<Double> kS, Supplier<Double> kV, Supplier<Double> kA, Supplier<Double> kG,
-                               FeedForwardController.ControlMode controlMode) {
+    public FFSettings(Supplier<Double> kS, Supplier<Double> kV, Supplier<Double> kA, Supplier<Double> kG,
+                      FFController.ControlMode controlMode) {
         this.kS = kS;
         this.kV = kV;
         this.kA = kA;
@@ -49,30 +49,30 @@ public class FeedForwardSettings {
         this.controlMode = controlMode;
     }
 
-    public FeedForwardSettings(Supplier<Double> kS, Supplier<Double> kV, Supplier<Double> kA,
-                               FeedForwardController.ControlMode controlMode) {
+    public FFSettings(Supplier<Double> kS, Supplier<Double> kV, Supplier<Double> kA,
+                      FFController.ControlMode controlMode) {
         this(kS, kV, kA, () -> 0.0, controlMode);
     }
 
-    public FeedForwardSettings(Supplier<Double> kV, Supplier<Double> kA,
-                               FeedForwardController.ControlMode controlMode) {
+    public FFSettings(Supplier<Double> kV, Supplier<Double> kA,
+                      FFController.ControlMode controlMode) {
         this(() -> 0.0, kV, kA, () -> 0.0, controlMode);
     }
 
-    public FeedForwardSettings(double kS, double kV, double kA, FeedForwardController.ControlMode controlMode) {
+    public FFSettings(double kS, double kV, double kA, FFController.ControlMode controlMode) {
         this(() -> kS, () -> kV, () -> kA, () -> 0.0, controlMode);
     }
 
-    public FeedForwardSettings(double kV, double kA, FeedForwardController.ControlMode controlMode) {
+    public FFSettings(double kV, double kA, FFController.ControlMode controlMode) {
         this(() -> 0.0, () -> kV, () -> kA, () -> 0.0, controlMode);
     }
 
-    public FeedForwardSettings(double kS, double kV, double kA, double kG,
-                               FeedForwardController.ControlMode controlMode) {
+    public FFSettings(double kS, double kV, double kA, double kG,
+                      FFController.ControlMode controlMode) {
         this(() -> kS, () -> kV, () -> kA, () -> kG, controlMode);
     }
 
-    public FeedForwardSettings(FeedForwardController.ControlMode controlMode) {
+    public FFSettings(FFController.ControlMode controlMode) {
         this(() -> 0.0, () -> 0.0, () -> 0.0, () -> 0.0, controlMode);
     }
 
@@ -108,7 +108,7 @@ public class FeedForwardSettings {
         this.kG = kG;
     }
 
-    public FeedForwardController.ControlMode getControlMode() {
+    public FFController.ControlMode getControlMode() {
         return controlMode;
     }
 }

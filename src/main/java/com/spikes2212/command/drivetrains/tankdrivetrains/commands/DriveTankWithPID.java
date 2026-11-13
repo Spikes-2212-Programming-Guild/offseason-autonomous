@@ -1,8 +1,8 @@
 package com.spikes2212.command.drivetrains.tankdrivetrains.commands;
 
 import com.spikes2212.command.drivetrains.tankdrivetrains.TankDrivetrain;
-import com.spikes2212.control.FeedForwardController;
-import com.spikes2212.control.FeedForwardSettings;
+import com.spikes2212.control.FFController;
+import com.spikes2212.control.FFSettings;
 import com.spikes2212.control.PIDSettings;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.Timer;
@@ -36,12 +36,12 @@ public class DriveTankWithPID extends Command {
     /**
      * The FeedForwards Settings of the FeedForward loop operating on the left side of the drivetrain.
      */
-    protected final FeedForwardSettings leftFeedForwardSettings;
+    protected final FFSettings leftFFSettings;
 
     /**
      * The FeedForwards Settings of the FeedForward loop operating on the right side of the drivetrain.
      */
-    protected final FeedForwardSettings rightFeedForwardSettings;
+    protected final FFSettings rightFFSettings;
 
     /**
      * The PID Controller of the PID loop operating on the left side of the drivetrain.
@@ -86,12 +86,12 @@ public class DriveTankWithPID extends Command {
     /**
      * The FeedForwards Controller of the FeedForward loop operating on the left side of the drivetrain.
      */
-    protected final FeedForwardController leftFeedForwardController;
+    protected final FFController leftFFController;
 
     /**
      * The FeedForwards Controller of the FeedForward loop operating on the right side of the drivetrain.
      */
-    protected final FeedForwardController rightFeedForwardController;
+    protected final FFController rightFFController;
 
     /**
      * The last time the left side of the drivetrain was not within its target zone.
@@ -106,8 +106,8 @@ public class DriveTankWithPID extends Command {
     public DriveTankWithPID(TankDrivetrain drivetrain, PIDSettings leftPIDSettings, PIDSettings rightPIDSettings,
                             Supplier<Double> leftSetpoint, Supplier<Double> rightSetpoint, Supplier<Double> leftSource,
                             Supplier<Double> rightSource, Supplier<Double> leftAcceleration,
-                            Supplier<Double> rightAcceleration, FeedForwardSettings leftFeedForwardSettings,
-                            FeedForwardSettings rightFeedForwardSettings) {
+                            Supplier<Double> rightAcceleration, FFSettings leftFFSettings,
+                            FFSettings rightFFSettings) {
         addRequirements(drivetrain);
         this.drivetrain = drivetrain;
         this.leftPIDSettings = leftPIDSettings;
@@ -124,57 +124,57 @@ public class DriveTankWithPID extends Command {
         this.rightAcceleration = rightAcceleration;
         this.leftPIDController.setSetpoint(leftSetpoint.get());
         this.rightPIDController.setSetpoint(rightSetpoint.get());
-        this.leftFeedForwardSettings = leftFeedForwardSettings;
-        this.rightFeedForwardSettings = rightFeedForwardSettings;
-        this.leftFeedForwardController = new FeedForwardController(leftFeedForwardSettings.getkS(),
-                leftFeedForwardSettings.getkV(), leftFeedForwardSettings.getkA(), leftFeedForwardSettings.getkG(),
-                leftFeedForwardSettings.getControlMode());
-        this.rightFeedForwardController = new FeedForwardController(rightFeedForwardSettings.getkS(),
-                rightFeedForwardSettings.getkV(), rightFeedForwardSettings.getkA(), rightFeedForwardSettings.getkG(),
-                rightFeedForwardSettings.getControlMode());
+        this.leftFFSettings = leftFFSettings;
+        this.rightFFSettings = rightFFSettings;
+        this.leftFFController = new FFController(leftFFSettings.getkS(),
+                leftFFSettings.getkV(), leftFFSettings.getkA(), leftFFSettings.getkG(),
+                leftFFSettings.getControlMode());
+        this.rightFFController = new FFController(rightFFSettings.getkS(),
+                rightFFSettings.getkV(), rightFFSettings.getkA(), rightFFSettings.getkG(),
+                rightFFSettings.getControlMode());
     }
 
     public DriveTankWithPID(TankDrivetrain drivetrain, PIDSettings leftPIDSettings, PIDSettings rightPIDSettings,
                             Supplier<Double> leftSetpoint, Supplier<Double> rightSetpoint,
                             Supplier<Double> leftSource, Supplier<Double> rightSource) {
         this(drivetrain, leftPIDSettings, rightPIDSettings, leftSetpoint, rightSetpoint, leftSource, rightSource,
-                () -> 0.0, () -> 0.0, FeedForwardSettings.EMPTY_FF_SETTINGS,
-                FeedForwardSettings.EMPTY_FF_SETTINGS);
+                () -> 0.0, () -> 0.0, FFSettings.EMPTY_FF_SETTINGS,
+                FFSettings.EMPTY_FF_SETTINGS);
     }
 
     public DriveTankWithPID(TankDrivetrain drivetrain, PIDSettings leftPIDSettings, PIDSettings rightPIDSettings,
                             double leftSetpoint, double rightSetpoint, Supplier<Double> leftSource,
                             Supplier<Double> rightSource, Supplier<Double> leftAcceleration,
-                            Supplier<Double> rightAcceleration, FeedForwardSettings leftFeedForwardSettings,
-                            FeedForwardSettings rightFeedForwardSettings) {
+                            Supplier<Double> rightAcceleration, FFSettings leftFFSettings,
+                            FFSettings rightFFSettings) {
         this(drivetrain, leftPIDSettings, rightPIDSettings, () -> leftSetpoint, () -> rightSetpoint,
-                leftAcceleration, rightAcceleration, leftSource, rightSource, leftFeedForwardSettings,
-                rightFeedForwardSettings);
+                leftAcceleration, rightAcceleration, leftSource, rightSource, leftFFSettings,
+                rightFFSettings);
     }
 
     public DriveTankWithPID(TankDrivetrain drivetrain, PIDSettings leftPIDSettings, PIDSettings rightPIDSettings,
                             double leftSetpoint, double rightSetpoint, Supplier<Double> leftSource,
                             Supplier<Double> rightSource) {
         this(drivetrain, leftPIDSettings, rightPIDSettings, () -> leftSetpoint, () -> rightSetpoint, () -> 0.0,
-                () -> 0.0, leftSource, rightSource, FeedForwardSettings.EMPTY_FF_SETTINGS,
-                FeedForwardSettings.EMPTY_FF_SETTINGS);
+                () -> 0.0, leftSource, rightSource, FFSettings.EMPTY_FF_SETTINGS,
+                FFSettings.EMPTY_FF_SETTINGS);
     }
 
     public DriveTankWithPID(TankDrivetrain drivetrain, PIDSettings leftPIDSettings, PIDSettings rightPIDSettings,
                             Supplier<Double> leftSetpoint, Supplier<Double> rightSetpoint, Supplier<Double> leftSource,
-                            Supplier<Double> rightSource, FeedForwardSettings leftFeedForwardSettings,
-                            FeedForwardSettings rightFeedForwardSettings) {
+                            Supplier<Double> rightSource, FFSettings leftFFSettings,
+                            FFSettings rightFFSettings) {
         this(drivetrain, leftPIDSettings, rightPIDSettings, leftSetpoint, rightSetpoint, leftSource, rightSource,
-                () -> 0.0, () -> 0.0, leftFeedForwardSettings, rightFeedForwardSettings);
+                () -> 0.0, () -> 0.0, leftFFSettings, rightFFSettings);
     }
 
     public DriveTankWithPID(TankDrivetrain drivetrain, PIDSettings leftPIDSettings, PIDSettings rightPIDSettings,
                             double leftSetpoint, double rightSetpoint, Supplier<Double> leftSource,
-                            Supplier<Double> rightSource, FeedForwardSettings leftFeedForwardSettings,
-                            FeedForwardSettings rightFeedForwardSettings) {
+                            Supplier<Double> rightSource, FFSettings leftFFSettings,
+                            FFSettings rightFFSettings) {
         this(drivetrain, leftPIDSettings, rightPIDSettings, () -> leftSetpoint, () -> rightSetpoint,
-                () -> 0.0, () -> 0.0, leftSource, rightSource, leftFeedForwardSettings,
-                rightFeedForwardSettings);
+                () -> 0.0, () -> 0.0, leftSource, rightSource, leftFFSettings,
+                rightFFSettings);
     }
 
     @Override
@@ -187,13 +187,13 @@ public class DriveTankWithPID extends Command {
         rightPIDController.setPID(rightPIDSettings.getkP(), rightPIDSettings.getkI(), rightPIDSettings.getkD());
         leftPIDController.setIZone(leftPIDSettings.getIZone());
         rightPIDController.setIZone(rightPIDSettings.getIZone());
-        leftFeedForwardController.setGains(leftFeedForwardSettings);
-        rightFeedForwardController.setGains(rightFeedForwardSettings);
+        leftFFController.setGains(leftFFSettings);
+        rightFFController.setGains(rightFFSettings);
         drivetrain.tankDrive((leftPIDController.calculate(leftSource.get()) +
-                        leftFeedForwardController.calculate(leftSource.get(), leftSetpoint.get(),
+                        leftFFController.calculate(leftSource.get(), leftSetpoint.get(),
                                 leftAcceleration.get())),
                 rightPIDController.calculate(rightSource.get()) +
-                        rightFeedForwardController.calculate(rightSource.get(), rightSetpoint.get(),
+                        rightFFController.calculate(rightSource.get(), rightSetpoint.get(),
                                 rightAcceleration.get()));
     }
 
