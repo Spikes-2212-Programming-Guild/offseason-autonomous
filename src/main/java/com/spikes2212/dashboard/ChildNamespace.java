@@ -4,9 +4,6 @@ package com.spikes2212.dashboard;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj2.command.Command;
 
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
-import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
 public class ChildNamespace extends RootNamespace {
