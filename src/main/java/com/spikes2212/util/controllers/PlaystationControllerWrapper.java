@@ -1,4 +1,4 @@
-package com.spikes2212.util;
+package com.spikes2212.util.controllers;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
@@ -24,7 +24,7 @@ public class PlaystationControllerWrapper extends Joystick {
         super(port);
         ps = new PS4Controller(port);
         if (!DriverStation.getJoystickName(port).contains("playstation")) {
-            throw new RuntimeException("THIS IS NOT A PlAYSTATION");
+            DriverStation.reportError("The Given Controller is not a PlayStation", true);
         }
     }
 

@@ -1,5 +1,6 @@
-package com.spikes2212.util;
+package com.spikes2212.util.controllers;
 
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
@@ -25,7 +26,7 @@ public class XboxControllerWrapper extends Joystick {
         super(port);
         xbox = new XboxController(port);
         if (!DriverStation.getJoystickIsXbox(port)) {
-            throw new RuntimeException("THIS IS NOT AN XBOX");
+            DriverStation.reportError("The Given Controller is not an Xbox", true);
         }
     }
 
