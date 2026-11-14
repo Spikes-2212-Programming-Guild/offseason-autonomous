@@ -24,6 +24,9 @@ public class XboxControllerWrapper extends Joystick {
     public XboxControllerWrapper(int port) {
         super(port);
         xbox = new XboxController(port);
+        if (!DriverStation.getJoystickIsXbox(port)) {
+            throw new RuntimeException("THIS IS NOT AN XBOX");
+        }
     }
 
     public JoystickButton getAButton() {

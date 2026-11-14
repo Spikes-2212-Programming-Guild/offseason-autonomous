@@ -4,10 +4,7 @@ import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.controls.*;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.GravityTypeValue;
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
+import com.ctre.phoenix6.signals.*;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.spikes2212.control.FFSettings;
 import com.spikes2212.control.PIDSettings;
@@ -165,7 +162,8 @@ public class TalonFXWrapper implements SmartMotorController {
     }
 
     public void follow(TalonFX master, boolean invert) {
-//        talonFX.setControl(new Follower(master.getDeviceID(), invert));
+        talonFX.setControl(new Follower(master.getDeviceID(),
+                invert ? MotorAlignmentValue.Opposed : MotorAlignmentValue.Aligned));
     }
 
     public void follow(TalonFXWrapper master, boolean invert) {

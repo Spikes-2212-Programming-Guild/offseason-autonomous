@@ -1,10 +1,9 @@
 package frc.robot.swerve.subsystem;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
-import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.spikes2212.command.drivetrains.swerve.SwerveDrivetrain;
-import com.spikes2212.command.drivetrains.swerve.SwerveModule;
-import com.spikes2212.command.drivetrains.swerve.commands.DriveSwerve;
+import com.spikes2212.commandbased.swerve.SwerveDrivetrain;
+import com.spikes2212.commandbased.swerve.SwerveModule;
+import com.spikes2212.commandbased.swerve.commands.DriveSwerve;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -98,7 +97,7 @@ public class Swerve extends SwerveDrivetrain {
     private boolean atRotation(Rotation2d rotation2d) {
         double error = rotation2d.minus(getAngle()).getDegrees();
         boolean isAtRotation = Math.abs(error) <= ROTATION_TOLERANCE_IN_DEGREES;
-        boolean isRotationStill = Math.abs(getSpeeds().omegaRadiansPerSecond)
+        boolean isRotationStill = Math.abs(getCurrentSpeeds().omegaRadiansPerSecond)
                 <= ROTATION_VELOCITY_TOLERANCE;
         return isAtRotation && isRotationStill;
     }
@@ -112,9 +111,9 @@ public class Swerve extends SwerveDrivetrain {
 
     public boolean atPose(Pose2d pose2d) {
         boolean atXAxis = atAxis(getEstimatedPose().getX(), pose2d.getX(),
-                getSpeeds().vxMetersPerSecond);
+                getCurrentSpeeds().vxMetersPerSecond);
         boolean atYAxis = atAxis(getEstimatedPose().getY(), pose2d.getY(),
-                getSpeeds().vyMetersPerSecond);
+                getCurrentSpeeds().vyMetersPerSecond);
         return atXAxis && atYAxis && atRotation(pose2d.getRotation());
     }
 
@@ -129,12 +128,12 @@ public class Swerve extends SwerveDrivetrain {
 
     @Override
     public void configureDashboard() {
-        namespace.putData("swerve state", this);
-        namespace.putData("field", field2d);
-        namespace.putRunnable("reset gyro", this::resetAngleSensor);
-        namespace.putNumber("odometry x", () -> odometry.getEstimatedPosition().getX());
-        namespace.putNumber("odometry y", () -> odometry.getEstimatedPosition().getY());
-        namespace.putNumber("odometry rotation", () -> odometry.getEstimatedPosition().getRotation().getDegrees());
+        namespace.publishSendable("swerve state", this);
+        namespace.publishSendable("field", field2d);
+        namespace.publishRunnable("reset gyro", this::resetAngleSensor);
+        namespace.publishDouble("odometry x", () -> odometry.getEstimatedPosition().getX());
+        namespace.publishDouble("odometry y", () -> odometry.getEstimatedPosition().getY());
+        namespace.publishDouble("odometry rotation", () -> odometry.getEstimatedPosition().getRotation().getDegrees());
     }
 
     @Override
@@ -147,19 +146,21 @@ public class Swerve extends SwerveDrivetrain {
      * converts controller coordinate system to wpilib coordinate system (blue/red depends on the game)
      */
     public Command driveWithController(Supplier<Double> leftX, Supplier<Double> leftY, Supplier<Double> rightX,
-                                       boolean isFieldRelative) {
-        Supplier<Double> allianceMultiplier = () -> isFieldRelative && DriverStation.getAlliance()
+                                       boolean isFieldRelative, double speedMultiplier) {
+        double allianceMultiplier = isFieldRelative && DriverStation.getAlliance()
                 .orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Blue ? 1.0 : -1.0;
 
         return new DriveSwerve(
-                this, () -> -leftY.get() * allianceMultiplier.get(),
-                () -> -leftX.get() * allianceMultiplier.get(), () -> -rightX.get(), isFieldRelative
+                this,
+                () -> -leftY.get() * allianceMultiplier * speedMultiplier,
+                () -> -leftX.get() * allianceMultiplier  * speedMultiplier,
+                () -> -rightX.get()  * speedMultiplier, isFieldRelative
         );
     }
 
     @Override
     public void simulationPeriodic() {
-        ChassisSpeeds speeds = getSpeeds();
+        ChassisSpeeds speeds = getCurrentSpeeds();
         simPose = simPose.exp(new Twist2d(
                 speeds.vxMetersPerSecond * DELTA_TIME,
                 speeds.vyMetersPerSecond * DELTA_TIME,

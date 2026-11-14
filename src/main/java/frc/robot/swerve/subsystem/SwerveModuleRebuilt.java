@@ -7,7 +7,7 @@ import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.ctre.phoenix6.sim.CANcoderSimState;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.revrobotics.spark.config.SparkBaseConfig;
-import com.spikes2212.command.drivetrains.swerve.SwerveModule;
+import com.spikes2212.commandbased.swerve.SwerveModule;
 import com.spikes2212.control.TrapezoidProfileSettings;
 import com.spikes2212.util.smartmotorcontrollers.SparkWrapper;
 import com.spikes2212.util.smartmotorcontrollers.TalonFXWrapper;
@@ -15,12 +15,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 
 import java.util.function.Supplier;
 
@@ -139,19 +137,19 @@ public class SwerveModuleRebuilt extends SwerveModule {
 
     @Override
     public void configureDashboard() {
-        namespace.putNumber("absolute encoder", () -> this.getAbsoluteModuleAngle().getDegrees());
-        namespace.putNumber("relative angle", this::getRelativeModuleAngle);
+        namespace.publishDouble("absolute encoder", () -> this.getAbsoluteModuleAngle().getDegrees());
+        namespace.publishDouble("relative angle", this::getRelativeModuleAngle);
 
-        Supplier<Double> targetAngle = namespace.addConstantDouble("target angle", 0);
-        namespace.putCommand("set target angle", Commands.runEnd(
+        Supplier<Double> targetAngle = namespace.addTunableDouble("target angle", 0);
+        namespace.publishCommand("set target angle", Commands.runEnd(
                 () -> setTargetAngle(Rotation2d.fromDegrees(targetAngle.get())),
                 this::stop,
                 this
         ));
 
-        namespace.putNumber("velocity", this::getDrivingVelocity);
-        Supplier<Double> targetVelocity = namespace.addConstantDouble("target velocity", 0);
-        namespace.putCommand("set target velocity", Commands.runEnd(
+        namespace.publishDouble("velocity", this::getDrivingVelocity);
+        Supplier<Double>  targetVelocity = namespace.addTunableDouble("target velocity", 0);
+        namespace.publishCommand("set target velocity", Commands.runEnd(
                 () -> setTargetVelocity(targetVelocity.get()),
                 this::stop,
                 this

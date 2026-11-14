@@ -51,7 +51,7 @@ public class SpikesLogger extends RootNamespace {
      * @param output the data to be logged
      */
     public <T> void log(T output) {
-        putString(key, output == null ? "null" : output.toString());
+        publishString(key, () -> (output == null ? "null" : output.toString()));
     }
 
     /**

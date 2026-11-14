@@ -23,6 +23,9 @@ public class PlaystationControllerWrapper extends Joystick {
     public PlaystationControllerWrapper(int port) {
         super(port);
         ps = new PS4Controller(port);
+        if (!DriverStation.getJoystickName(port).contains("playstation")) {
+            throw new RuntimeException("THIS IS NOT A PlAYSTATION");
+        }
     }
 
     public JoystickButton getCrossButton() {

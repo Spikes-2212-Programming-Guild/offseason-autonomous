@@ -17,11 +17,6 @@ public class Robot extends TimedRobot {
     private final Swerve swerve = Swerve.getInstance();
 //    AutonomousContainer container = new AutonomousContainer(swerve);
 
-    private static double deadband(double input) {
-        if (Math.abs(input) < 0.05) return 0;
-        return MathUtil.copyDirectionPow(input, 2);
-    }
-
     @Override
     public void robotInit() {
         CommandScheduler.getInstance().cancelAll();
@@ -63,13 +58,15 @@ public class Robot extends TimedRobot {
         swerve.resetRelativeEncoders();
 
         OI oi = new OI();
-        double ySpeed = 5;
-        double xSpeed = 5;
-        double rotationSpeed = 5;
         swerve.setDefaultCommand(swerve.driveWithController(
-                () -> deadband(oi.getLeftX()) * xSpeed,
-                () -> deadband(oi.getLeftY()) * ySpeed,
-                () -> deadband(oi.getRightX()) * rotationSpeed, true));
+                () -> deadband(oi.getLeftX()),
+                () -> deadband(oi.getLeftY()),
+                () -> deadband(oi.getRightX()), true, 5.1));
+    }
+
+    private static double deadband(double input) {
+        if (Math.abs(input) < 0.05) return 0;
+        return MathUtil.copyDirectionPow(input, 2);
     }
 
     @Override

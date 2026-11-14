@@ -65,7 +65,7 @@ public class AutonomousContainer {
         AutoBuilder.configure(
                 drivetrain::getEstimatedPose,
                 drivetrain::resetPose,
-                drivetrain::getSpeeds,
+                drivetrain::getCurrentSpeeds,
                 this::driveByCorrectedSpeed,
                 new PPHolonomicDriveController(
                         new PIDConstants(0, 0, 0),
@@ -77,7 +77,7 @@ public class AutonomousContainer {
     }
 
     private ChassisSpeeds getPIDChassisSpeedsToPose(Pose2d targetPose) {
-        Pose2d currentPose = drivetrain.getEstimatedPoseByLatency(drivetrain.getSpeeds(), ROBOT_POSE_LATENCY);
+        Pose2d currentPose = drivetrain.getEstimatedPoseByLatency(drivetrain.getCurrentSpeeds(), ROBOT_POSE_LATENCY);
         double xSpeed = xPidController.calculate(currentPose.getX(), targetPose.getX());
         double ySpeed = yPidController.calculate(currentPose.getY(), targetPose.getY());
         double rotationalSpeed = rotationalPidController.calculate(drivetrain.getAngle().getRadians(),
@@ -121,7 +121,7 @@ public class AutonomousContainer {
     }
 
     public void configureDashboard() {
-        namespace.putBoolean("should mirror", AutonomousContainer::shouldMirror);
+        namespace.publishBoolean("should mirror", AutonomousContainer::shouldMirror);
     }
 
     public void updateNamespace() {
