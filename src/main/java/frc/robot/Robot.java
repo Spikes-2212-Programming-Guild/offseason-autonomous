@@ -6,23 +6,26 @@ package frc.robot;
 
 import com.spikes2212.dashboard.RootNamespace;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.swerve.subsystem.Swerve;
 import frc.robot.swerve.subsystem.SwerveModuleHolder;
 
+import java.util.function.Supplier;
+
 public class Robot extends TimedRobot {
 
-    RootNamespace namespace = new RootNamespace("robot");
-    private final Swerve swerve = Swerve.getInstance();
+    private final RootNamespace namespace;
+    private final Swerve swerve;
+    private final Supplier<Double> test;
 //    AutonomousContainer container = new AutonomousContainer(swerve);
 
-    @Override
-    public void robotInit() {
+    public Robot() {
         CommandScheduler.getInstance().cancelAll();
-//        Command auto = new PathPlannerAuto("New Auto");
-//        namespace.putCommand("auto", auto);
-//        swerve = Swerve.getInstance();
+        namespace = new RootNamespace("robot");
+        test = namespace.addTunableDouble("test", 123);
+        swerve = Swerve.getInstance();
     }
 
     @Override
@@ -58,6 +61,7 @@ public class Robot extends TimedRobot {
         swerve.resetRelativeEncoders();
 
         OI oi = new OI();
+//        namespace.publishDouble("test", () -> 5.0);
         swerve.setDefaultCommand(swerve.driveWithController(
                 () -> deadband(oi.getLeftX()),
                 () -> deadband(oi.getLeftY()),
@@ -71,6 +75,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopPeriodic() {
+        DataLogManager.log(String.valueOf(test.get()));
     }
 
     @Override
