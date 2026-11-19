@@ -4,34 +4,40 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.PathPlannerPath;
 import com.spikes2212.dashboard.RootNamespace;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.swerve.commands.Drive;
 import frc.robot.swerve.subsystem.Swerve;
 import frc.robot.swerve.subsystem.SwerveModuleHolder;
 
-import java.util.function.Supplier;
-
 public class Robot extends TimedRobot {
 
-    private final RootNamespace namespace;
-    private final Swerve swerve;
-    private final Supplier<Double> test;
-//    AutonomousContainer container = new AutonomousContainer(swerve);
+    private Swerve swerve = Swerve.getInstance();
 
-    public Robot() {
+    RootNamespace namespace = new RootNamespace("robot");
+    AutonomousContainer container = new AutonomousContainer(swerve);
+
+
+    @Override
+    public void robotInit() {
         CommandScheduler.getInstance().cancelAll();
-        namespace = new RootNamespace("robot");
-        test = namespace.addTunableDouble("test", 123);
-        swerve = Swerve.getInstance();
+        Command auto = new PathPlannerAuto("New Auto");
+        Command auto1 = new PathPlannerAuto("New New Auto");
+        namespace.putCommand("auto", auto);
+        namespace.putCommand("auto1", auto1);
+//        swerve = Swerve.getInstance();
     }
 
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
         SwerveModuleHolder.updateNamespace();
+        container.updateNamespace();
         namespace.update();
     }
 
@@ -61,11 +67,13 @@ public class Robot extends TimedRobot {
         swerve.resetRelativeEncoders();
 
         OI oi = new OI();
-//        namespace.publishDouble("test", () -> 5.0);
-        swerve.setDefaultCommand(swerve.driveWithController(
-                () -> deadband(oi.getLeftX()),
-                () -> deadband(oi.getLeftY()),
-                () -> deadband(oi.getRightX()), true, 5.1));
+        double ySpeed = 2;
+        double xSpeed = 2;
+        double rotationSpeed = 2;
+        swerve.setDefaultCommand(new Drive(
+                () -> deadband(oi.getLeftY()) * xSpeed,
+                () -> deadband(oi.getLeftX()) * ySpeed,
+                () -> deadband(oi.getRightX()) * rotationSpeed, true, true));
     }
 
     private static double deadband(double input) {
@@ -75,7 +83,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopPeriodic() {
-        DataLogManager.log(String.valueOf(test.get()));
     }
 
     @Override

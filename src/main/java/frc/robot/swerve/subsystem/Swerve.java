@@ -1,9 +1,10 @@
 package frc.robot.swerve.subsystem;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
-import com.spikes2212.commandbased.swerve.SwerveDrivetrain;
-import com.spikes2212.commandbased.swerve.SwerveModule;
-import com.spikes2212.commandbased.swerve.commands.DriveSwerve;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.spikes2212.command.drivetrains.swerve.SwerveDrivetrain;
+import com.spikes2212.command.drivetrains.swerve.SwerveModule;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -11,13 +12,14 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotMap;
+import org.json.simple.parser.ParseException;
 
-import java.util.function.Supplier;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static frc.robot.swerve.subsystem.SwerveConstants.DRIVETRAIN.*;
 
@@ -27,7 +29,9 @@ public class Swerve extends SwerveDrivetrain {
     private final Field2d field2d;
 
     private final boolean isSimulated;
+    private final List<PathPlannerPath> pathPlannerPaths = this.getPathplannerPaths();
 
+    private double simulatedYawDegrees;
     Pose2d simPose = new Pose2d();
 
     private static SwerveDrivePoseEstimator odometry;
@@ -65,7 +69,7 @@ public class Swerve extends SwerveDrivetrain {
     @Override
     public Rotation2d getAngle() {
         if (isSimulated) {
-            return simPose.getRotation();
+            return Rotation2d.fromDegrees(simulatedYawDegrees);
         }
         return gyro.getRotation2d();
     }
@@ -78,6 +82,7 @@ public class Swerve extends SwerveDrivetrain {
     public void setGyro(double angle) {
         gyro.setYaw(angle);
         if (isSimulated) {
+            simulatedYawDegrees = angle;
             simPose = new Pose2d(simPose.getTranslation(), Rotation2d.fromDegrees(angle));
         }
     }
@@ -97,13 +102,12 @@ public class Swerve extends SwerveDrivetrain {
     private boolean atRotation(Rotation2d rotation2d) {
         double error = rotation2d.minus(getAngle()).getDegrees();
         boolean isAtRotation = Math.abs(error) <= ROTATION_TOLERANCE_IN_DEGREES;
-        boolean isRotationStill = Math.abs(getCurrentSpeeds().omegaRadiansPerSecond)
+        boolean isRotationStill = Math.abs(getSpeeds().omegaRadiansPerSecond)
                 <= ROTATION_VELOCITY_TOLERANCE;
         return isAtRotation && isRotationStill;
     }
 
     private boolean atAxis(double currentAxisPose, double targetAxisPose, double currentVelocity) {
-        // TODO - fix wrapping breaking "atPose"
         boolean atPose = MathUtil.isNear(targetAxisPose, currentAxisPose, TRANSLATION_POSE_TOLERANCE);
         boolean robotStill = Math.abs(currentVelocity) <= TRANSLATION_VELOCITY_TOLERANCE;
         return atPose && robotStill;
@@ -111,9 +115,9 @@ public class Swerve extends SwerveDrivetrain {
 
     public boolean atPose(Pose2d pose2d) {
         boolean atXAxis = atAxis(getEstimatedPose().getX(), pose2d.getX(),
-                getCurrentSpeeds().vxMetersPerSecond);
+                getSpeeds().vxMetersPerSecond);
         boolean atYAxis = atAxis(getEstimatedPose().getY(), pose2d.getY(),
-                getCurrentSpeeds().vyMetersPerSecond);
+                getSpeeds().vyMetersPerSecond);
         return atXAxis && atYAxis && atRotation(pose2d.getRotation());
     }
 
@@ -128,45 +132,49 @@ public class Swerve extends SwerveDrivetrain {
 
     @Override
     public void configureDashboard() {
-        namespace.publishSendable("swerve state", this);
-        namespace.publishSendable("field", field2d);
-        namespace.publishRunnable("reset gyro", this::resetAngleSensor);
-        namespace.publishDouble("odometry x", () -> odometry.getEstimatedPosition().getX());
-        namespace.publishDouble("odometry y", () -> odometry.getEstimatedPosition().getY());
-        namespace.publishDouble("odometry rotation", () -> odometry.getEstimatedPosition().getRotation().getDegrees());
+        namespace.putData("swerve state", this);
+        namespace.putData("field", field2d);
+        namespace.putRunnable("reset gyro", this::resetAngleSensor);
+        namespace.putNumber("odometry x", () -> odometry.getEstimatedPosition().getX());
+        namespace.putNumber("odometry y", () -> odometry.getEstimatedPosition().getY());
+        namespace.putNumber("odometry rotation", () -> odometry.getEstimatedPosition().getRotation().getDegrees());
+    }
+
+    public void updateTrajectory() {
+        List<Pose2d> poses = new ArrayList<>();
+        for (PathPlannerPath path : pathPlannerPaths) {
+            poses.addAll(path.getAllPathPoints().stream().map(
+                    point -> new Pose2d(point.position.getX(), point.position.getY(), new Rotation2d())).toList());
+        }
+        field2d.getObject("path").setPoses(poses);
     }
 
     @Override
     public void periodic() {
         super.periodic();
         updateOdometry();
+        updateTrajectory();
+        field2d.setRobotPose(odometry.getEstimatedPosition());
     }
 
-    /**
-     * converts controller coordinate system to wpilib coordinate system (blue/red depends on the game)
-     */
-    public Command driveWithController(Supplier<Double> leftX, Supplier<Double> leftY, Supplier<Double> rightX,
-                                       boolean isFieldRelative, double speedMultiplier) {
-        double allianceMultiplier = isFieldRelative && DriverStation.getAlliance()
-                .orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Blue ? 1.0 : -1.0;
-
-        return new DriveSwerve(
-                this,
-                () -> -leftY.get() * allianceMultiplier * speedMultiplier,
-                () -> -leftX.get() * allianceMultiplier  * speedMultiplier,
-                () -> -rightX.get()  * speedMultiplier, isFieldRelative
-        );
+    public List<PathPlannerPath> getPathplannerPaths() {
+        try {
+            return PathPlannerAuto.getPathGroupFromAutoFile("New New Auto");
+        } catch (IOException | ParseException e) {
+            return null;
+        }
     }
 
     @Override
     public void simulationPeriodic() {
-        ChassisSpeeds speeds = getCurrentSpeeds();
+        ChassisSpeeds speeds = getSpeeds();
         simPose = simPose.exp(new Twist2d(
                 speeds.vxMetersPerSecond * DELTA_TIME,
                 speeds.vyMetersPerSecond * DELTA_TIME,
                 speeds.omegaRadiansPerSecond * DELTA_TIME)
         );
 
-        field2d.setRobotPose(odometry.getEstimatedPosition());
+        simulatedYawDegrees = simPose.getRotation().getDegrees();
+        field2d.setRobotPose(simPose);
     }
 }
