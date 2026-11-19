@@ -138,6 +138,8 @@ public class Swerve extends SwerveDrivetrain {
         namespace.publishDouble("odometry x", () -> odometry.getEstimatedPosition().getX());
         namespace.publishDouble("odometry y", () -> odometry.getEstimatedPosition().getY());
         namespace.publishDouble("odometry rotation", () -> odometry.getEstimatedPosition().getRotation().getDegrees());
+        namespace.publishRunnable("reset odometry", () ->
+                odometry.resetPosition(getAngle(), getSwerveModulePositions(), new Pose2d()));
     }
 
     public void updateTrajectory() {

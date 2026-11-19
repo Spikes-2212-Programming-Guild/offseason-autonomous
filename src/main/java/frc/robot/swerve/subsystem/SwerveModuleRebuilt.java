@@ -9,6 +9,7 @@ import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.spikes2212.commandbased.swerve.SwerveModule;
 import com.spikes2212.control.TrapezoidProfileSettings;
+import com.spikes2212.util.UnifiedControlMode;
 import com.spikes2212.util.smartmotorcontrollers.SparkWrapper;
 import com.spikes2212.util.smartmotorcontrollers.TalonFXWrapper;
 import edu.wpi.first.math.geometry.Rotation2d;

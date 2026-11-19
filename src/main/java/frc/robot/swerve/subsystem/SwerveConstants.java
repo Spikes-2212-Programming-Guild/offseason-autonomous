@@ -4,8 +4,11 @@ import com.ctre.phoenix6.CANBus;
 import com.spikes2212.control.FFController;
 import com.spikes2212.control.FFSettings;
 import com.spikes2212.control.PIDSettings;
+import com.spikes2212.dashboard.RootNamespace;
 
 public class SwerveConstants {
+
+    private static final RootNamespace namespace = new RootNamespace("cause i wanted");
 
     interface MODULE {
         double MIN_SPEED_LIMIT = 0.1;
@@ -16,10 +19,12 @@ public class SwerveConstants {
         int SECONDS_IN_MINUTE = 60;
         int ABSOLUTE_POSITION_DISCONTINUITY_POINT = 1;
 
-        PIDSettings DRIVE_PID_SETTINGS = new PIDSettings(
-                0.015, 0, 0, 0, 0, 0);
-        FFSettings DRIVE_FF_SETTINGS = new FFSettings(
-                0.014, 0.175, 0, FFController.ControlMode.LINEAR_VELOCITY);
+        PIDSettings DRIVE_PID_SETTINGS = namespace.addPIDNamespace("drive very", PIDSettings.EMPTY_PID_SETTINGS);
+        FFSettings DRIVE_FF_SETTINGS = namespace.addFFNamespace("drive very", FFSettings.EMPTY_FF_SETTINGS);
+//        PIDSettings DRIVE_PID_SETTINGS = new PIDSettings(
+//                0.015, 0, 0, 0, 0, 0);
+//        FFSettings DRIVE_FF_SETTINGS = new FFSettings(
+//                0.014, 0.175, 0, FFController.ControlMode.LINEAR_VELOCITY);
         PIDSettings TURN_PID_SETTINGS = new PIDSettings(
                 0.02, 0, 0.0001, 0, 0, 0);
         FFSettings TURN_FF_SETTINGS =
@@ -72,4 +77,9 @@ public class SwerveConstants {
         double BACK_LEFT_OFFSET = 162.10546875;
         double BACK_RIGHT_OFFSET = 168.04101563;
     }
+
+    public static void updateNamespace() {
+        namespace.update();
+    }
+
 }

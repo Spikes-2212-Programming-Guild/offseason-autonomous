@@ -39,7 +39,6 @@ public class AutonomousContainer {
     private final PIDController yPidController;
     private final ProfiledPIDController rotationalPidController;
 
-
     private static final PIDSettings X_CONTROLLER_SETTINGS =
             namespace.addPIDNamespace("x controller settings", PIDSettings.EMPTY_PID_SETTINGS);
     private static final PIDSettings Y_CONTROLLER_SETTINGS =
@@ -130,7 +129,7 @@ public class AutonomousContainer {
 
     public static boolean shouldMirror() {
         var alliance = DriverStation.getAlliance();
-        return alliance.filter(value -> value == DriverStation.Alliance.Blue).isPresent();
+        return alliance.filter(value -> value == DriverStation.Alliance.Red).isPresent();
     }
 
     private static RobotConfig getRobotConfig() {

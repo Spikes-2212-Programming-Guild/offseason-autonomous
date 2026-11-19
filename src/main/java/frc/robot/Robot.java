@@ -15,6 +15,8 @@ import frc.robot.swerve.commands.Drive;
 import frc.robot.swerve.subsystem.Swerve;
 import frc.robot.swerve.subsystem.SwerveModuleHolder;
 
+import static frc.robot.swerve.subsystem.SwerveConstants.updateNamespace;
+
 public class Robot extends TimedRobot {
 
     private Swerve swerve = Swerve.getInstance();
@@ -28,8 +30,10 @@ public class Robot extends TimedRobot {
         CommandScheduler.getInstance().cancelAll();
         Command auto = new PathPlannerAuto("New Auto");
         Command auto1 = new PathPlannerAuto("New New Auto");
+        Command auto2 = new PathPlannerAuto("New New New Auto");
         namespace.publishCommand("auto", auto);
         namespace.publishCommand("auto1", auto1);
+        namespace.publishCommand("auto2", auto2);
 //        swerve = Swerve.getInstance();
     }
 
@@ -39,6 +43,7 @@ public class Robot extends TimedRobot {
         SwerveModuleHolder.updateNamespace();
         container.updateNamespace();
         namespace.update();
+        updateNamespace();
     }
 
     @Override
@@ -53,6 +58,8 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
+        swerve.resetFieldRelativity();
+        swerve.resetRelativeEncoders();
 
     }
 
@@ -63,7 +70,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopInit() {
-        swerve.resetFieldRelativity();
         swerve.resetRelativeEncoders();
 
         OI oi = new OI();
