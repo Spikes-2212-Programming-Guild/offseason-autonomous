@@ -5,12 +5,12 @@
 package frc.robot;
 
 import com.pathplanner.lib.commands.PathPlannerAuto;
-import com.pathplanner.lib.path.PathPlannerPath;
 import com.spikes2212.dashboard.RootNamespace;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.auto.AutonomousContainer;
 import frc.robot.swerve.commands.Drive;
 import frc.robot.swerve.subsystem.Swerve;
 import frc.robot.swerve.subsystem.SwerveModuleHolder;
@@ -28,8 +28,8 @@ public class Robot extends TimedRobot {
         CommandScheduler.getInstance().cancelAll();
         Command auto = new PathPlannerAuto("New Auto");
         Command auto1 = new PathPlannerAuto("New New Auto");
-        namespace.putCommand("auto", auto);
-        namespace.putCommand("auto1", auto1);
+        namespace.publishCommand("auto", auto);
+        namespace.publishCommand("auto1", auto1);
 //        swerve = Swerve.getInstance();
     }
 
@@ -73,7 +73,7 @@ public class Robot extends TimedRobot {
         swerve.setDefaultCommand(new Drive(
                 () -> deadband(oi.getLeftY()) * xSpeed,
                 () -> deadband(oi.getLeftX()) * ySpeed,
-                () -> deadband(oi.getRightX()) * rotationSpeed, true, true));
+                () -> deadband(oi.getRightX()) * rotationSpeed, true));
     }
 
     private static double deadband(double input) {
